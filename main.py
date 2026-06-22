@@ -1,15 +1,11 @@
-import requests
-
-url = "https://api.github.com/trending"
+import pandas as pd
+from business_finder.scorer import calculate_score
 
 print("Growth Radar AI")
-print("Checking internet connection...")
+print("----------------")
 
-response = requests.get("https://api.github.com")
+df = pd.read_csv("data/businesses.csv")
 
-print("Status Code:", response.status_code)
+df["score"] = df.apply(calculate_score, axis=1)
 
-if response.status_code == 200:
-    print("Internet connection working!")
-else:
-    print("Something went wrong.")
+print(df)
