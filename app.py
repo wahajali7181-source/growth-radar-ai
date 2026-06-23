@@ -1,44 +1,51 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import io
 
 from business_finder.scorer import calculate_score, get_recommendation
 
 st.set_page_config(page_title="Growth Radar AI", layout="wide")
 
+# ======================
+# HEADER
+# ======================
 st.title("🚀 Growth Radar AI - Smart Lead Intelligence System")
-st.caption("AI-powered tool to identify, score and prioritize business leads automatically.")
-st.write("Upload a business CSV file to analyze leads automatically.")
-st.info("""
-👋 Welcome to Growth Radar AI
+st.caption("AI-powered tool to analyze, score and prioritize business leads automatically.")
 
-Upload a business CSV file and the AI will:
-- Score each business
-- Detect online presence
-- Rank high potential leads
-- Generate downloadable report
+st.info("""
+👋 Welcome!
+
+Upload a CSV file with business data and get:
+- Lead scoring
+- Priority detection
+- AI insights
+- Downloadable report
 """)
 
-# Upload file
-
-uploaded_file = st.file_uploader(
-    "📂 Upload Business Data (CSV file with website, instagram, reviews etc.)"
-)
+# ======================
+# FILE UPLOAD
+# ======================
+uploaded_file = st.file_uploader("📂 Upload Business CSV File")
 
 if uploaded_file is None:
     st.warning("Please upload a CSV file to start analysis.")
-    # Read data
-import io
-df = pd.read_csv(io.StringIO(uploaded_file.getvalue().decode("utf-8")))
-    # Scoring
+
+if uploaded_file is not None:
+
+    # SAFE CSV READ (IMPORTANT FIX)
+    df = pd.read_csv(io.StringIO(uploaded_file.getvalue().decode("utf-8")))
+
+    # ======================
+    # SCORING ENGINE
+    # ======================
     df["score"] = df.apply(calculate_score, axis=1)
     df["recommendation"] = df["score"].apply(get_recommendation)
 
-    # Sort
     df = df.sort_values(by="score")
 
     # ======================
-    # 📊 QUICK STATS
+    # 📊 METRICS
     # ======================
     st.subheader("📊 Quick Stats")
 
@@ -86,11 +93,11 @@ df = pd.read_csv(io.StringIO(uploaded_file.getvalue().decode("utf-8")))
     st.subheader("🧠 AI Insight")
 
     if best["score"] > 80:
-        st.info("This is a very strong lead. High online presence detected.")
+        st.info("Strong digital presence detected. High conversion potential.")
     elif best["score"] > 50:
         st.warning("Medium opportunity. Needs marketing improvement.")
     else:
-        st.error("Weak digital presence. Easy target for outreach.")
+        st.error("Weak online presence. Easy outreach target.")
 
     st.divider()
 

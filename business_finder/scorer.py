@@ -1,7 +1,6 @@
 def calculate_score(row):
     score = 0
 
-    # safe access using .get()
     if row.get("website", "no") == "yes":
         score += 30
 
