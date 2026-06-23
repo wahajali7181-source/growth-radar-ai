@@ -6,14 +6,27 @@ from business_finder.scorer import calculate_score, get_recommendation
 
 st.set_page_config(page_title="Growth Radar AI", layout="wide")
 
-st.title("🚀 Growth Radar AI")
+st.title("🚀 Growth Radar AI - Smart Lead Intelligence System")
+st.caption("AI-powered tool to identify, score and prioritize business leads automatically.")
 st.write("Upload a business CSV file to analyze leads automatically.")
+st.info("""
+👋 Welcome to Growth Radar AI
+
+Upload a business CSV file and the AI will:
+- Score each business
+- Detect online presence
+- Rank high potential leads
+- Generate downloadable report
+""")
 
 # Upload file
-uploaded_file = st.file_uploader("📂 Upload Business CSV")
 
-if uploaded_file is not None:
+uploaded_file = st.file_uploader(
+    "📂 Upload Business Data (CSV file with website, instagram, reviews etc.)"
+)
 
+if uploaded_file is None:
+    st.warning("Please upload a CSV file to start analysis.")
     # Read data
     df = pd.read_csv(uploaded_file)
 
