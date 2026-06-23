@@ -3,14 +3,110 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import io
 
-from business_finder.scorer import calculate_score, get_recommendation
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer
+)
+from reportlab.lib.styles import (
+    getSampleStyleSheet
+)
+from io import BytesIO
 
-# Safe Trend Radar import
+from business_finder.scorer import (
+    calculate_score,
+    get_recommendation
+)
+
+# =========================
+# TREND RADAR IMPORT
+# =========================
+
 try:
-    from trend_radar.analyzer import analyze_trends, get_top_trend
+    from trend_radar.analyzer import (
+        analyze_trends,
+        get_top_trend
+    )
+
     TREND_RADAR_AVAILABLE = True
+
 except Exception:
     TREND_RADAR_AVAILABLE = False
+
+
+# =========================
+# PDF REPORT FUNCTION
+# =========================
+
+def generate_pdf_report(df):
+
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(buffer)
+
+    styles = getSampleStyleSheet()
+
+    elements = []
+
+    elements.append(
+        Paragraph(
+            "Growth Radar AI Report",
+            styles["Title"]
+        )
+    )
+
+    elements.append(
+        Spacer(1, 12)
+    )
+
+    elements.append(
+        Paragraph(
+            f"Total Leads: {len(df)}",
+            styles["Normal"]
+        )
+    )
+
+    elements.append(
+        Paragraph(
+            f"Best Score: {df['score'].max()}",
+            styles["Normal"]
+        )
+    )
+
+    elements.append(
+        Spacer(1, 12)
+    )
+
+    elements.append(
+        Paragraph(
+            "Top Leads",
+            styles["Heading2"]
+        )
+    )
+
+    top_leads = df.head(5)
+
+    for _, row in top_leads.iterrows():
+
+        elements.append(
+            Paragraph(
+                f"{row['name']} | "
+                f"Score: {row['score']} | "
+                f"{row['recommendation']}",
+                styles["Normal"]
+            )
+        )
+
+    doc.build(elements)
+
+    buffer.seek(0)
+
+    return buffer
+
+
+# =========================
+# PAGE CONFIG
+# =========================
 
 st.set_page_config(
     page_title="Growth Radar AI",
@@ -22,15 +118,21 @@ st.set_page_config(
 # =========================
 
 st.title("🚀 Growth Radar AI")
-st.caption("AI Lead Finder & Business Intelligence Tool")
 
-st.info("""
+st.caption(
+    "AI Lead Finder & Business Intelligence Tool"
+)
+
+st.info(
+    """
 Upload a business CSV file and get:
+
 - Lead scoring
 - Priority ranking
 - AI insights
 - Trend analysis
-""")
+"""
+)
 
 # =========================
 # SAMPLE CSV
@@ -59,7 +161,10 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file is None:
-    st.warning("Please upload a CSV file to start analysis.")
+
+    st.warning(
+        "Please upload a CSV file to start analysis."
+    )
 
 else:
 
@@ -67,7 +172,9 @@ else:
 
         df = pd.read_csv(
             io.StringIO(
-                uploaded_file.getvalue().decode("utf-8")
+                uploaded_file
+                .getvalue()
+                .decode("utf-8")
             )
         )
 
@@ -90,13 +197,16 @@ else:
         ]
 
         if missing:
+
             st.error(
-                f"Missing columns: {', '.join(missing)}"
+                f"Missing columns: "
+                f"{', '.join(missing)}"
             )
+
             st.stop()
 
         # =========================
-        # LEAD SCORING
+        # SCORING
         # =========================
 
         df["score"] = df.apply(
@@ -104,8 +214,9 @@ else:
             axis=1
         )
 
-        df["recommendation"] = df["score"].apply(
-            get_recommendation
+        df["recommendation"] = (
+            df["score"]
+            .apply(get_recommendation)
         )
 
         df = df.sort_values(
@@ -114,7 +225,7 @@ else:
         )
 
         # =========================
-        # STATS
+        # OVERVIEW
         # =========================
 
         st.subheader("📊 Overview")
@@ -149,21 +260,39 @@ else:
 
         st.subheader("📋 Leads Dashboard")
 
+        st.button(
+            "Generate Outreach Message"
+        )
+
         st.dataframe(df)
 
         # =========================
-        # DOWNLOAD REPORT
+        # CSV DOWNLOAD
         # =========================
 
-        csv = df.to_csv(
-            index=False
-        ).encode("utf-8")
+        csv = (
+            df.to_csv(index=False)
+            .encode("utf-8")
+        )
 
         st.download_button(
             "⬇ Download Report",
             csv,
             "lead_report.csv",
             "text/csv"
+        )
+
+        # =========================
+        # PDF DOWNLOAD
+        # =========================
+
+        pdf_file = generate_pdf_report(df)
+
+        st.download_button(
+            label="📄 Download PDF Report",
+            data=pdf_file,
+            file_name="growth_radar_report.pdf",
+            mime="application/pdf"
         )
 
         st.divider()
@@ -189,18 +318,24 @@ else:
         st.subheader("🧠 AI Insight")
 
         if best["score"] > 80:
+
             st.info(
-                "Strong digital presence - High conversion potential"
+                "Strong digital presence - "
+                "High conversion potential"
             )
 
         elif best["score"] > 50:
+
             st.warning(
-                "Medium opportunity - Needs improvement"
+                "Medium opportunity - "
+                "Needs improvement"
             )
 
         else:
+
             st.error(
-                "Low presence - Easy outreach target"
+                "Low presence - "
+                "Easy outreach target"
             )
 
         st.divider()
@@ -225,17 +360,21 @@ else:
         st.divider()
 
         # =========================
-        # TREND RADAR AI
+        # TREND RADAR
         # =========================
 
         st.header("📈 Trend Radar AI")
 
         if TREND_RADAR_AVAILABLE:
 
-            if st.button("Analyze Trends"):
+            if st.button(
+                "Analyze Trends"
+            ):
 
-                df_trends = analyze_trends(
-                    "trend_radar/trends_data.csv"
+                df_trends = (
+                    analyze_trends(
+                        "trend_radar/trends_data.csv"
+                    )
                 )
 
                 st.subheader(
@@ -253,13 +392,17 @@ else:
                 st.success(
                     f"Top Trend: "
                     f"{top['keyword']} "
-                    f"(Score: {top['trend_score']:.1f})"
+                    f"(Score: "
+                    f"{top['trend_score']:.1f})"
                 )
 
                 st.bar_chart(
-                    df_trends.set_index(
+                    df_trends
+                    .set_index(
                         "keyword"
-                    )["trend_score"]
+                    )[
+                        "trend_score"
+                    ]
                 )
 
         else:
@@ -271,5 +414,6 @@ else:
     except Exception as e:
 
         st.error(
-            f"Error processing file: {str(e)}"
+            f"Error processing file: "
+            f"{str(e)}"
         )
