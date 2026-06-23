@@ -122,3 +122,27 @@ if uploaded_file is not None:
     ax2.pie(lead_counts, labels=lead_counts.index, autopct='%1.1f%%')
 
     st.pyplot(fig2)
+    # =========================
+# 🟡 TOOL #2 - TREND RADAR
+# =========================
+
+st.header("📈 Trend Radar AI (Beta)")
+
+if st.button("Analyze Trends"):
+
+    from trend_radar.analyzer import analyze_trends, get_top_trend
+
+    df_trends = analyze_trends("trend_radar/trends_data.csv")
+
+    st.subheader("📊 Trend Dashboard")
+    st.dataframe(df_trends)
+
+    st.subheader("🔥 Top Trend")
+
+    top = get_top_trend(df_trends)
+
+    st.success(f"{top['keyword']} | Score: {top['trend_score']}")
+
+    st.info("💡 Create content around this topic for maximum reach!")
+
+    st.bar_chart(df_trends.set_index("keyword")["trend_score"])
