@@ -5,26 +5,22 @@ import io
 
 from business_finder.scorer import calculate_score, get_recommendation
 
-# Trend Radar import (safe)
-from trend_radar.analyzer import analyze_trends, get_top_trend
-
 
 st.set_page_config(page_title="Growth Radar AI", layout="wide")
 
 # =========================
 # HEADER
 # =========================
-st.title("🚀 Growth Radar AI - AI Business Intelligence Suite")
-st.caption("Lead Finder + Trend Radar AI in one platform")
+st.title("🚀 Growth Radar AI")
+st.caption("AI Lead Finder & Business Intelligence Tool")
 
 st.info("""
-👋 Welcome to Growth Radar AI
+👋 Welcome!
 
-This tool helps you:
-- Find high quality business leads
-- Analyze business scores
-- Detect trending topics
-- Generate insights for growth
+Upload a CSV file and get:
+- Lead scoring
+- Priority ranking
+- Business insights
 """)
 
 # =========================
@@ -33,24 +29,25 @@ This tool helps you:
 uploaded_file = st.file_uploader("📂 Upload Business CSV File")
 
 if uploaded_file is None:
-    st.warning("Upload a CSV file to start analysis")
+    st.warning("Upload a CSV file to start analysis.")
 
 if uploaded_file is not None:
 
+    # SAFE CSV READ
     df = pd.read_csv(io.StringIO(uploaded_file.getvalue().decode("utf-8")))
 
     # =========================
-    # LEAD SCORING
+    # SCORING
     # =========================
     df["score"] = df.apply(calculate_score, axis=1)
     df["recommendation"] = df["score"].apply(get_recommendation)
 
-    df = df.sort_values(by="score")
+    df = df.sort_values(by="score", ascending=False)
 
     # =========================
     # STATS
     # =========================
-    st.subheader("📊 Lead Stats")
+    st.subheader("📊 Overview")
 
     col1, col2, col3 = st.columns(3)
 
@@ -61,14 +58,14 @@ if uploaded_file is not None:
     st.divider()
 
     # =========================
-    # DASHBOARD
+    # TABLE
     # =========================
-    st.subheader("📋 Lead Dashboard")
+    st.subheader("📋 Leads Dashboard")
 
     st.dataframe(df[["name", "score", "recommendation"]])
 
-    # Download report
-    csv = df.to_csv(index=False).encode('utf-8')
+    # DOWNLOAD REPORT
+    csv = df.to_csv(index=False).encode("utf-8")
 
     st.download_button(
         "⬇ Download Report",
@@ -89,7 +86,7 @@ if uploaded_file is not None:
     st.success(f"{best['name']} | Score: {best['score']} | {best['recommendation']}")
 
     # =========================
-    # INSIGHT
+    # AI INSIGHT
     # =========================
     st.subheader("🧠 AI Insight")
 
@@ -98,38 +95,17 @@ if uploaded_file is not None:
     elif best["score"] > 50:
         st.warning("Medium opportunity - Needs improvement")
     else:
-        st.error("Low presence - Easy outreach target")
+        st.error("Low presence - Easy target")
 
     st.divider()
 
     # =========================
-    # CHARTS
+    # CHART
     # =========================
     st.subheader("📊 Score Chart")
 
     fig, ax = plt.subplots()
     ax.bar(df["name"], df["score"])
     plt.xticks(rotation=45)
+
     st.pyplot(fig)
-
-    # =========================
-    # TREND RADAR AI
-    # =========================
-    st.divider()
-
-    st.header("📈 Trend Radar AI (Beta)")
-
-    if st.button("Analyze Trends"):
-
-        df_trends = analyze_trends("trend_radar/trends_data.csv")
-
-        st.subheader("📊 Trend Dashboard")
-        st.dataframe(df_trends)
-
-        top = get_top_trend(df_trends)
-
-        st.success(f"🔥 Top Trend: {top['keyword']} | Score: {top['trend_score']}")
-
-        st.info("💡 Create content around this topic for maximum reach")
-
-        st.bar_chart(df_trends.set_index("keyword")["trend_score"])
