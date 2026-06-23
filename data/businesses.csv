@@ -1,5 +1,5 @@
-name,website,instagram
-ABC Dental,yes,no
-XYZ Gym,no,yes
-Fresh Bakery,no,no
-Tech Solutions,yes,yes
+name,website,instagram,facebook,google_reviews
+ABC Dental,yes,no,yes,120
+XYZ Gym,no,yes,yes,45
+Fresh Bakery,no,no,no,8
+Tech Solutions,yes,yes,yes,300

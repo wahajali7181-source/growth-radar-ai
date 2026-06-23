@@ -1,5 +1,5 @@
-name,website,instagram,score,recommendation
-ABC Dental,yes,no,80,Low Priority
-XYZ Gym,no,yes,60,Medium Priority
-Fresh Bakery,no,no,40,High Priority Lead
-Tech Solutions,yes,yes,100,Low Priority
+name,website,instagram,facebook,google_reviews,score,recommendation
+Fresh Bakery,no,no,no,8,0,High Priority Lead
+XYZ Gym,no,yes,yes,45,50,Medium Priority
+ABC Dental,yes,no,yes,120,80,Low Priority
+Tech Solutions,yes,yes,yes,300,100,Low Priority
