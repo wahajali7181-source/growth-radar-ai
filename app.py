@@ -28,8 +28,8 @@ uploaded_file = st.file_uploader(
 if uploaded_file is None:
     st.warning("Please upload a CSV file to start analysis.")
     # Read data
-    df = pd.read_csv(uploaded_file)
-
+import io
+df = pd.read_csv(io.StringIO(uploaded_file.getvalue().decode("utf-8")))
     # Scoring
     df["score"] = df.apply(calculate_score, axis=1)
     df["recommendation"] = df["score"].apply(get_recommendation)

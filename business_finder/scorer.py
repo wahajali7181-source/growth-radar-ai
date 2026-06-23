@@ -1,16 +1,17 @@
 def calculate_score(row):
     score = 0
 
-    if row["website"] == "yes":
+    # safe access using .get()
+    if row.get("website", "no") == "yes":
         score += 30
 
-    if row["instagram"] == "yes":
+    if row.get("instagram", "no") == "yes":
         score += 20
 
-    if row["facebook"] == "yes":
+    if row.get("facebook", "no") == "yes":
         score += 20
 
-    reviews = int(row["google_reviews"])
+    reviews = int(row.get("google_reviews", 0))
 
     if reviews > 100:
         score += 30
