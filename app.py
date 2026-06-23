@@ -5,49 +5,52 @@ import io
 
 from business_finder.scorer import calculate_score, get_recommendation
 
+# Trend Radar import (safe)
+from trend_radar.analyzer import analyze_trends, get_top_trend
+
+
 st.set_page_config(page_title="Growth Radar AI", layout="wide")
 
-# ======================
+# =========================
 # HEADER
-# ======================
-st.title("🚀 Growth Radar AI - Smart Lead Intelligence System")
-st.caption("AI-powered tool to analyze, score and prioritize business leads automatically.")
+# =========================
+st.title("🚀 Growth Radar AI - AI Business Intelligence Suite")
+st.caption("Lead Finder + Trend Radar AI in one platform")
 
 st.info("""
-👋 Welcome!
+👋 Welcome to Growth Radar AI
 
-Upload a CSV file with business data and get:
-- Lead scoring
-- Priority detection
-- AI insights
-- Downloadable report
+This tool helps you:
+- Find high quality business leads
+- Analyze business scores
+- Detect trending topics
+- Generate insights for growth
 """)
 
-# ======================
+# =========================
 # FILE UPLOAD
-# ======================
+# =========================
 uploaded_file = st.file_uploader("📂 Upload Business CSV File")
 
 if uploaded_file is None:
-    st.warning("Please upload a CSV file to start analysis.")
+    st.warning("Upload a CSV file to start analysis")
 
 if uploaded_file is not None:
 
-    # SAFE CSV READ (IMPORTANT FIX)
     df = pd.read_csv(io.StringIO(uploaded_file.getvalue().decode("utf-8")))
 
-    # ======================
-    # SCORING ENGINE
-    # ======================
+    # =========================
+    # LEAD SCORING
+    # =========================
     df["score"] = df.apply(calculate_score, axis=1)
     df["recommendation"] = df["score"].apply(get_recommendation)
 
     df = df.sort_values(by="score")
 
-    # ======================
-    # 📊 METRICS
-    # ======================
-    st.subheader("📊 Quick Stats")
+    # =========================
+    # STATS
+    # =========================
+    st.subheader("📊 Lead Stats")
 
     col1, col2, col3 = st.columns(3)
 
@@ -57,20 +60,18 @@ if uploaded_file is not None:
 
     st.divider()
 
-    # ======================
-    # 📋 DASHBOARD
-    # ======================
-    st.subheader("📋 Leads Dashboard")
+    # =========================
+    # DASHBOARD
+    # =========================
+    st.subheader("📋 Lead Dashboard")
 
     st.dataframe(df[["name", "score", "recommendation"]])
 
-    # ======================
-    # ⬇ DOWNLOAD REPORT
-    # ======================
+    # Download report
     csv = df.to_csv(index=False).encode('utf-8')
 
     st.download_button(
-        "⬇ Download Report CSV",
+        "⬇ Download Report",
         csv,
         "lead_report.csv",
         "text/csv"
@@ -78,71 +79,57 @@ if uploaded_file is not None:
 
     st.divider()
 
-    # ======================
-    # 🏆 BEST LEAD
-    # ======================
-    st.subheader("🏆 Best Lead")
-
+    # =========================
+    # BEST LEAD
+    # =========================
     best = df.iloc[0]
+
+    st.subheader("🏆 Best Lead")
 
     st.success(f"{best['name']} | Score: {best['score']} | {best['recommendation']}")
 
-    # ======================
-    # 🧠 AI INSIGHT
-    # ======================
+    # =========================
+    # INSIGHT
+    # =========================
     st.subheader("🧠 AI Insight")
 
     if best["score"] > 80:
-        st.info("Strong digital presence detected. High conversion potential.")
+        st.info("Strong digital presence - High conversion potential")
     elif best["score"] > 50:
-        st.warning("Medium opportunity. Needs marketing improvement.")
+        st.warning("Medium opportunity - Needs improvement")
     else:
-        st.error("Weak online presence. Easy outreach target.")
+        st.error("Low presence - Easy outreach target")
 
     st.divider()
 
-    # ======================
-    # 📈 BAR CHART
-    # ======================
-    st.subheader("📊 Lead Score Chart")
+    # =========================
+    # CHARTS
+    # =========================
+    st.subheader("📊 Score Chart")
 
     fig, ax = plt.subplots()
     ax.bar(df["name"], df["score"])
     plt.xticks(rotation=45)
     st.pyplot(fig)
 
-    # ======================
-    # 🥧 PIE CHART
-    # ======================
-    st.subheader("🥧 Lead Distribution")
-
-    lead_counts = df["recommendation"].value_counts()
-
-    fig2, ax2 = plt.subplots()
-    ax2.pie(lead_counts, labels=lead_counts.index, autopct='%1.1f%%')
-
-    st.pyplot(fig2)
     # =========================
-# 🟡 TOOL #2 - TREND RADAR
-# =========================
+    # TREND RADAR AI
+    # =========================
+    st.divider()
 
-st.header("📈 Trend Radar AI (Beta)")
+    st.header("📈 Trend Radar AI (Beta)")
 
-if st.button("Analyze Trends"):
+    if st.button("Analyze Trends"):
 
-    from trend_radar.analyzer import analyze_trends, get_top_trend
+        df_trends = analyze_trends("trend_radar/trends_data.csv")
 
-    df_trends = analyze_trends("trend_radar/trends_data.csv")
+        st.subheader("📊 Trend Dashboard")
+        st.dataframe(df_trends)
 
-    st.subheader("📊 Trend Dashboard")
-    st.dataframe(df_trends)
+        top = get_top_trend(df_trends)
 
-    st.subheader("🔥 Top Trend")
+        st.success(f"🔥 Top Trend: {top['keyword']} | Score: {top['trend_score']}")
 
-    top = get_top_trend(df_trends)
+        st.info("💡 Create content around this topic for maximum reach")
 
-    st.success(f"{top['keyword']} | Score: {top['trend_score']}")
-
-    st.info("💡 Create content around this topic for maximum reach!")
-
-    st.bar_chart(df_trends.set_index("keyword")["trend_score"])
+        st.bar_chart(df_trends.set_index("keyword")["trend_score"])
