@@ -93,7 +93,41 @@ st.download_button(
     "sample.csv",
     "text/csv"
 )
+# =========================
+# QUICK LEAD FINDER (UI)
+# =========================
 
+st.subheader("🔍 Quick Lead Finder")
+
+business_type = st.text_input(
+    "Business Type",
+    placeholder="Dentist, Gym, Restaurant"
+)
+
+city = st.text_input(
+    "City",
+    placeholder="Lahore"
+)
+
+if st.button("Find Businesses"):
+
+    if business_type and city:
+
+        st.success(
+            f"Searching for {business_type} businesses in {city}..."
+        )
+
+        st.info(
+            "Auto business fetching will be connected in the next version."
+        )
+
+    else:
+
+        st.warning(
+            "Please enter Business Type and City."
+        )
+
+st.divider()
 
 # =========================
 # FILE UPLOAD
@@ -231,6 +265,10 @@ Growth Radar AI
         # TREND RADAR
         # =========================
         st.header("📈 Trend Radar AI")
+        trend_keyword = st.text_input(
+    "Enter Trend Keyword",
+    placeholder="AI, Crypto, Fitness, Real Estate"
+    )
 
         if TREND_RADAR_AVAILABLE:
 
