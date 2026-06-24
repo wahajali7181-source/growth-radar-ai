@@ -1,20 +1,37 @@
+from pytrends.request import TrendReq
 import pandas as pd
 
-def analyze_trends(file_path):
-    df = pd.read_csv(file_path)
+def analyze_trends(keyword):
 
-    df["trend_score"] = (
-        (df["views"] / 1000)
-        + df["growth_rate"]
+    pytrends = TrendReq(hl='en-US', tz=360)
+
+    pytrends.build_payload([keyword])
+
+    data = pytrends.interest_over_time()
+
+    if data.empty:
+        return pd.DataFrame()
+
+    data = data.reset_index()
+
+    data.rename(
+        columns={
+            keyword: "trend_score"
+        },
+        inplace=True
     )
 
-    df = df.sort_values(
-        by="trend_score",
-        ascending=False
-    )
-
-    return df
+    return data[["date", "trend_score"]]
 
 
 def get_top_trend(df):
-    return df.iloc[0]
+
+    top = df.sort_values(
+        "trend_score",
+        ascending=False
+    ).iloc[0]
+
+    return {
+        "keyword": "Selected Keyword",
+        "trend_score": top["trend_score"]
+    }
