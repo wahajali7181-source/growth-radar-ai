@@ -26,7 +26,76 @@ st.set_page_config(
     page_title="Growth Radar AI",
     layout="wide"
 )
+st.markdown("""
+<style>
 
+.main {
+    background-color: #0f172a;
+}
+
+.stApp {
+    background-color: #0f172a;
+}
+
+h1,h2,h3 {
+    color: white !important;
+}
+
+p,label,div {
+    color: white !important;
+}
+
+[data-testid="stMetric"] {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 15px;
+}
+
+.stButton>button {
+    background: linear-gradient(
+        90deg,
+        #3b82f6,
+        #8b5cf6
+    );
+
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.stDownloadButton>button {
+    background: linear-gradient(
+        90deg,
+        #10b981,
+        #14b8a6
+    );
+
+    color: white;
+    border: none;
+    border-radius: 12px;
+}
+.stDataFrame {
+    border-radius: 15px;
+}
+
+.stTextInput > div > div > input {
+    border-radius: 12px;
+    background-color: #1e293b;
+    color: white;
+}
+
+.stFileUploader {
+    background-color: #1e293b;
+    padding: 10px;
+    border-radius: 15px;
+}
+
+.stAlert {
+    border-radius: 15px;
+}
+</style>
+""", unsafe_allow_html=True)
 # =========================
 # PDF REPORT
 # =========================
@@ -75,10 +144,10 @@ def generate_pdf_report(df):
     for _, row in df.head(5).iterrows():
 
         elements.append(
-            Paragraph(
-                f"{row['name']} | Score: {row['score']} | {row['recommendation']}",
-                styles["Normal"]
-            )
+          Paragraph(
+    str(row.to_dict()),
+    styles["Normal"]
+)
         )
 
     doc.build(elements)
@@ -91,8 +160,72 @@ def generate_pdf_report(df):
 # =========================
 # HEADER
 # =========================
-st.title("🚀 Growth Radar AI")
+st.markdown("""
+<div style="
+background: linear-gradient(135deg,#2563eb,#7c3aed);
+padding:35px;
+border-radius:20px;
+text-align:center;
+margin-bottom:20px;
+box-shadow:0px 10px 30px rgba(0,0,0,0.3);
+">
 
+<h1 style="color:white;">
+🚀 Growth Radar AI
+</h1>
+
+<h3 style="color:white;">
+Find Leads • Analyze Trends • Generate Outreach
+</h3>
+
+<p style="color:white;">
+Built for Agencies, Freelancers & Growth Teams
+</p>
+
+</div>
+""", unsafe_allow_html=True)
+st.markdown("""
+<div style="
+display:flex;
+gap:15px;
+margin-bottom:20px;
+">
+
+<div style="
+background:#1e293b;
+padding:20px;
+border-radius:15px;
+flex:1;
+text-align:center;
+">
+<h3>🔍 Lead Finder</h3>
+<p>Find local businesses instantly</p>
+</div>
+
+<div style="
+background:#1e293b;
+padding:20px;
+border-radius:15px;
+flex:1;
+text-align:center;
+">
+<h3>📈 Trend Radar</h3>
+<p>Analyze Google Trends data</p>
+</div>
+
+<div style="
+background:#1e293b;
+padding:20px;
+border-radius:15px;
+flex:1;
+text-align:center;
+">
+<h3>📄 AI Reports</h3>
+<p>Generate PDF reports automatically</p>
+</div>
+
+</div>
+""", unsafe_allow_html=True)
 st.caption(
     "AI Lead Finder + Trend Analyzer + SaaS Tool"
 )
@@ -141,9 +274,7 @@ city = st.text_input(
     placeholder="Lahore"
 )
 
-if st.button(
-    "Find Businesses"
-):
+if st.button("Find Businesses"):
 
     if business_type and city:
 
@@ -152,21 +283,68 @@ if st.button(
             city
         )
 
-        st.success(
-            f"Found {len(df_businesses)} businesses"
-        )
+        if len(df_businesses) > 0:
 
-        st.dataframe(
-            df_businesses
-        )
+            st.success(
+                f"Found {len(df_businesses)} results"
+            )
+
+            # Temporary lead score
+            df_businesses["lead_score"] = [
+                95 - (i * 5)
+                for i in range(len(df_businesses))
+            ]
+
+            st.subheader("📋 Found Businesses")
+
+            st.dataframe(
+                df_businesses,
+                use_container_width=True
+            )
+
+            # Best Lead
+            best = df_businesses.iloc[0]
+
+            st.subheader("🏆 Best Opportunity")
+
+            st.success(
+                f"{best['name']} | Lead Score: {best['lead_score']}"
+            )
+
+            # Outreach Message
+            outreach = f'''
+Hi {best['name']},
+
+I found your business while analyzing businesses in {city}.
+
+I help companies improve their online visibility,
+lead generation and customer acquisition.
+
+Would you be interested in a quick discussion?
+
+Best regards,
+Wahaj Ali
+'''
+
+            st.subheader("✉ Outreach Message")
+
+            st.text_area(
+                "Copy & Send",
+                outreach,
+                height=220
+            )
+
+        else:
+
+            st.warning(
+                "No businesses found."
+            )
 
     else:
 
         st.warning(
             "Please enter Business Type and City."
         )
-
-st.divider()
 
 # =========================
 # CSV UPLOAD
@@ -454,3 +632,20 @@ Growth Radar AI
         st.error(
             f"Error: {str(e)}"
         )
+        st.divider()
+
+st.divider()
+
+st.markdown("""
+<center>
+
+<h4>
+🚀 Growth Radar AI © 2026
+</h4>
+
+<p>
+Developed by <b>Wahaj Ali</b>
+</p>
+
+</center>
+""", unsafe_allow_html=True)
