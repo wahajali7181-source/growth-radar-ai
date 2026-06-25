@@ -9,6 +9,65 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 from business_finder.scorer import calculate_score, get_recommendation
 from local_business_finder.finder import find_businesses
+def generate_audit(business):
+
+    score = business["lead_score"]
+
+    if score >= 80:
+
+        audit = """
+✅ Strong Business Presence
+
+Website: Good
+Reputation: Strong
+Growth Opportunity: Medium
+
+Recommended Services:
+• Meta Ads
+• Video Marketing
+
+Potential:
+20-50 Leads / Month
+"""
+
+    elif score >= 50:
+
+        audit = """
+⚠ Moderate Online Presence
+
+Website: Average
+Reputation: Average
+Growth Opportunity: High
+
+Recommended Services:
+• Meta Ads
+• Google Ads
+• SEO
+
+Potential:
+30-70 Leads / Month
+"""
+
+    else:
+
+        audit = """
+🚀 High Growth Opportunity
+
+Website: Weak
+Reputation: Low
+Growth Opportunity: Very High
+
+Recommended Services:
+• Full Digital Marketing
+• Meta Ads
+• SEO
+• Video Marketing
+
+Potential:
+50-100 Leads / Month
+"""
+
+    return audit
 # =========================
 # TREND RADAR IMPORT
 # =========================
@@ -332,6 +391,16 @@ Wahaj Ali
                 "Copy & Send",
                 outreach,
                 height=220
+            )
+
+            st.subheader("🧠 AI Business Audit")
+
+            audit = generate_audit(best)
+
+            st.text_area(
+                "Audit Report",
+                audit,
+                height=300
             )
 
         else:
