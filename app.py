@@ -8,7 +8,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 
 from business_finder.scorer import calculate_score, get_recommendation
-
+from local_business_finder.finder import find_businesses
 # =========================
 # TREND RADAR IMPORT
 # =========================
@@ -141,16 +141,23 @@ city = st.text_input(
     placeholder="Lahore"
 )
 
-if st.button("Find Businesses"):
+if st.button(
+    "Find Businesses"
+):
 
     if business_type and city:
 
-        st.success(
-            f"Searching for {business_type} businesses in {city}"
+        df_businesses = find_businesses(
+            business_type,
+            city
         )
 
-        st.info(
-            "API integration will be connected in Tool 3."
+        st.success(
+            f"Found {len(df_businesses)} businesses"
+        )
+
+        st.dataframe(
+            df_businesses
         )
 
     else:
