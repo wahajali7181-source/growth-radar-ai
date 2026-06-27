@@ -12,6 +12,7 @@ from local_business_finder.finder import find_businesses
 
 from auth.login import login_user, register_user
 from lead_score.engine import calculate_lead_score, opportunity_level
+from business_ai.advisor import get_business_advice
 def generate_audit(business):
 
     score = business["lead_score"]
@@ -504,20 +505,27 @@ Wahaj Ali
                 audit,
                 height=300
               )
-            
-             
+        st.subheader("💡 AI Opportunity Recommendation")
 
+        advice = get_business_advice(best)
+
+        st.text_area(
+    "Business Growth Plan",
+    advice,
+    height=220
+)    
+                
     else:
 
-            st.warning(
+        st.warning(
                 "No businesses found."
             )
-
 else:
 
     st.warning(
             "Please enter Business Type and City."
         )
+
     
 
 # =========================
