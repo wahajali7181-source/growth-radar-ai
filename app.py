@@ -9,7 +9,9 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 from business_finder.scorer import calculate_score, get_recommendation
 from local_business_finder.finder import find_businesses
+
 from auth.login import login_user, register_user
+from lead_score.engine import calculate_lead_score, opportunity_level
 def generate_audit(business):
 
     score = business["lead_score"]
@@ -420,30 +422,57 @@ if st.button("Find Businesses"):
                 f"Found {len(df_businesses)} results"
             )
 
-            # Temporary lead score
-            df_businesses["lead_score"] = [
-                95 - (i * 5)
-                for i in range(len(df_businesses))
-            ]
+         # =========================
+# REAL LEAD SCORE
+# =========================
 
-            st.subheader("📋 Found Businesses")
+        lead_scores = []
+        opportunities = []
 
-            st.dataframe(
+        for _, business in df_businesses.iterrows():
+
+            score = calculate_lead_score(
+             business
+    )
+
+            level = opportunity_level(
+            score
+    )
+
+            lead_scores.append(score)
+
+            opportunities.append(level)
+
+        df_businesses["lead_score"] = lead_scores
+
+        df_businesses["opportunity"] = opportunities
+
+        df_businesses = df_businesses.sort_values(
+             by="lead_score",
+            ascending=False
+        )
+          
+            
+
+        st.subheader("📋 Found Businesses")
+
+        st.dataframe(
                 df_businesses,
                 use_container_width=True
             )
+            
 
             # Best Lead
-            best = df_businesses.iloc[0]
+        best = df_businesses.iloc[0]
 
-            st.subheader("🏆 Best Opportunity")
+        st.subheader("🏆 Best Opportunity")
 
-            st.success(
-                f"{best['name']} | Lead Score: {best['lead_score']}"
+        st.success(
+                f"{best['name']} | Lead Score: {best['lead_score']} | {best['opportunity']}"
             )
 
             # Outreach Message
-            outreach = f'''
+        outreach = f'''
 Hi {best['name']},
 
 I found your business while analyzing businesses in {city}.
@@ -457,38 +486,39 @@ Best regards,
 Wahaj Ali
 '''
 
-            st.subheader("✉ Outreach Message")
+        st.subheader("✉ Outreach Message")
 
-            st.text_area(
+        st.text_area(
                 "Copy & Send",
                 outreach,
                 height=220
             )
 
-            st.subheader("🧠 AI Business Audit")
+        st.subheader("🧠 AI Business Audit")
 
-            audit = generate_audit(best)
+        audit = generate_audit(best)
             
 
-            st.text_area(
+        st.text_area(
                 "Audit Report",
                 audit,
                 height=300
-            )
+              )
             
              
 
-        else:
+    else:
 
             st.warning(
                 "No businesses found."
             )
 
-    else:
+else:
 
-        st.warning(
+    st.warning(
             "Please enter Business Type and City."
         )
+    
 
 # =========================
 # CSV UPLOAD
