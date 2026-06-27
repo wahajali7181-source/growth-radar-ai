@@ -9,6 +9,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 from business_finder.scorer import calculate_score, get_recommendation
 from local_business_finder.finder import find_businesses
+from auth.login import login_user, register_user
 def generate_audit(business):
 
     score = business["lead_score"]
@@ -85,6 +86,8 @@ st.set_page_config(
     page_title="Growth Radar AI",
     layout="wide"
 )
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 st.markdown("""
 <style>
 
@@ -215,7 +218,64 @@ def generate_pdf_report(df):
 
     return buffer
 
+if not st.session_state.logged_in:
 
+    st.title("🔐 Growth Radar AI Login")
+
+    tab1, tab2 = st.tabs(["Login", "Create Account"])
+
+    with tab1:
+
+        email = st.text_input("Email")
+
+        password = st.text_input(
+            "Password",
+            type="password"
+        )
+
+        if st.button("Login"):
+
+            if login_user(email, password):
+
+                st.session_state.logged_in = True
+
+                st.success("Login Successful")
+
+                st.rerun()
+
+            else:
+
+                st.error("Invalid Email or Password")
+
+    with tab2:
+
+        new_email = st.text_input(
+            "New Email"
+        )
+
+        new_password = st.text_input(
+            "New Password",
+            type="password"
+        )
+
+        if st.button("Create Account"):
+
+            if register_user(
+                new_email,
+                new_password
+            ):
+
+                st.success(
+                    "Account Created Successfully"
+                )
+
+            else:
+
+                st.warning(
+                    "Email already exists"
+                )
+
+    st.stop()
 # =========================
 # HEADER
 # =========================
@@ -301,7 +361,19 @@ st.info("""
 ✔ Outreach Messages
 """)
 
+# =========================
+# LOGOUT
+# =========================
 
+col1, col2 = st.columns([8, 1])
+
+with col2:
+
+    if st.button("🚪 Logout"):
+
+        st.session_state.logged_in = False
+
+        st.rerun()
 # =========================
 # SAMPLE CSV
 # =========================
@@ -396,12 +468,15 @@ Wahaj Ali
             st.subheader("🧠 AI Business Audit")
 
             audit = generate_audit(best)
+            
 
             st.text_area(
                 "Audit Report",
                 audit,
                 height=300
             )
+            
+             
 
         else:
 
