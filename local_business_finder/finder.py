@@ -34,7 +34,9 @@ def find_businesses(business_type, city):
 
         businesses.append(
             {
-                "name": item.get("display_name", "Unknown"),
+                "name": clean_business_name(
+    item.get("display_name", "Unknown")
+),
                 "latitude": item.get("lat"),
                 "longitude": item.get("lon"),
                 "rating": round(random.uniform(3.0, 5.0), 1),
@@ -44,3 +46,9 @@ def find_businesses(business_type, city):
         )
 
     return pd.DataFrame(businesses)
+def clean_business_name(name):
+
+    if not name:
+        return "Unknown"
+
+    return name.split(",")[0].strip()
