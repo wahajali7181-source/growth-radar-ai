@@ -1,13 +1,27 @@
+import pandas as pd
+
+
 def calculate_lead_score(business):
 
     score = 0
 
+    # =========================
     # Website
-    if str(business.get("website", "")).lower() == "yes":
+    # =========================
+    website = str(business.get("website", "")).strip()
+
+    if website:
         score += 30
 
+    # =========================
     # Rating
-    rating = float(business.get("rating", 0))
+    # =========================
+    rating = business.get("rating", 0)
+
+    if pd.isna(rating):
+        rating = 0
+
+    rating = float(rating)
 
     if rating >= 4.8:
         score += 30
@@ -21,8 +35,15 @@ def calculate_lead_score(business):
     elif rating >= 3.5:
         score += 10
 
+    # =========================
     # Reviews
-    reviews = int(business.get("reviews", 0))
+    # =========================
+    reviews = business.get("reviews", 0)
+
+    if pd.isna(reviews):
+        reviews = 0
+
+    reviews = int(reviews)
 
     if reviews >= 500:
         score += 40

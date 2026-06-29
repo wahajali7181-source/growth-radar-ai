@@ -1,6 +1,18 @@
+
 import pandas as pd
 import requests
-import random
+from config.settings import (
+    MAX_RESULTS,
+    REQUEST_TIMEOUT,
+    USER_AGENT
+)
+
+def clean_business_name(name):
+
+    if not name:
+        return "Unknown"
+
+    return name.split(",")[0].strip()
 
 
 def find_businesses(business_type, city):
@@ -12,21 +24,29 @@ def find_businesses(business_type, city):
     params = {
         "q": query,
         "format": "json",
-        "limit": 10
+        "limit": MAX_RESULTS
     }
 
     headers = {
         "User-Agent": "GrowthRadarAI"
     }
 
-    response = requests.get(
-        url,
-        params=params,
-        headers=headers,
-        timeout=20
-    )
+    try:
 
-    data = response.json()
+        response = requests.get(
+            url,
+            params=params,
+            headers=headers,
+            timeout=20
+        )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+    except Exception:
+
+        return pd.DataFrame()
 
     businesses = []
 
@@ -35,20 +55,34 @@ def find_businesses(business_type, city):
         businesses.append(
             {
                 "name": clean_business_name(
-    item.get("display_name", "Unknown")
-),
+                    item.get("display_name", "Unknown")
+                ),
+
+                "address": item.get(
+                    "display_name",
+                    ""
+                ),
+
                 "latitude": item.get("lat"),
+
                 "longitude": item.get("lon"),
-                "rating": round(random.uniform(3.0, 5.0), 1),
-                "reviews": random.randint(5, 500),
-                "website": random.choice(["Yes", "No"])
+
+                "website": "",
+
+                "phone": "",
+
+                "email": "",
+
+                "instagram": "",
+
+                "facebook": "",
+
+                "linkedin": "",
+
+                "rating": None,
+
+                "reviews": None
             }
         )
 
     return pd.DataFrame(businesses)
-def clean_business_name(name):
-
-    if not name:
-        return "Unknown"
-
-    return name.split(",")[0].strip()

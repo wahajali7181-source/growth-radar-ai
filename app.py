@@ -13,7 +13,7 @@ from local_business_finder.finder import find_businesses
 from auth.login import login_user, register_user
 from lead_score.engine import calculate_lead_score, opportunity_level
 from business_ai.advisor import get_business_advice
-from config import FREE_MODE
+from app_config import FREE_MODE
 def generate_audit(business):
 
     score = business["lead_score"]

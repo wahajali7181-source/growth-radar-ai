@@ -1,0 +1,9 @@
+APP_NAME = "Growth Radar AI"
+
+VERSION = "0.3.0"
+
+MAX_RESULTS = 50
+
+REQUEST_TIMEOUT = 20
+
+USER_AGENT = "GrowthRadarAI"
