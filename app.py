@@ -14,6 +14,7 @@ from auth.login import login_user, register_user
 from lead_score.engine import calculate_lead_score, opportunity_level
 from business_ai.advisor import get_business_advice
 from app_config import FREE_MODE
+from digital_presence.engine import calculate_presence_score
 def generate_audit(business):
 
     score = business["lead_score"]
@@ -467,14 +468,45 @@ if st.button("Find Businesses"):
             # Best Lead
         best = df_businesses.iloc[0]
 
+        presence_score = calculate_presence_score(best)
+
         st.subheader("🏆 Best Opportunity")
+  
+        st.metric(
+        "🌐 Digital Presence Score",
+        f"{presence_score}/100"
+)
+
+        if presence_score >= 80:
+
+            st.success(
+        "Excellent Digital Presence"
+    )
+
+        elif presence_score >= 60:
+
+            st.info(
+        "Good Digital Presence"
+    )
+
+        elif presence_score >= 40:
+
+            st.warning(
+        "Needs Improvement"
+    )
+
+        else:
+
+            st.error(
+        "Poor Digital Presence"
+    )
 
         st.success(
-                f"{best['name']} | Lead Score: {best['lead_score']} | {best['opportunity']}"
-            )
+    f"{best['name']} | Lead Score: {best['lead_score']} | {best['opportunity']}"
+)
 
-            # Outreach Message
-        outreach = f'''
+# Outreach Message
+        outreach = f"""
 Hi {best['name']},
 
 I found your business while analyzing businesses in {city}.
@@ -486,26 +518,26 @@ Would you be interested in a quick discussion?
 
 Best regards,
 Wahaj Ali
-'''
+"""
 
         st.subheader("✉ Outreach Message")
 
         st.text_area(
-                "Copy & Send",
-                outreach,
-                height=220
-            )
+    "Copy & Send",
+    outreach,
+    height=220
+)
 
         st.subheader("🧠 AI Business Audit")
 
         audit = generate_audit(best)
-            
 
         st.text_area(
-                "Audit Report",
-                audit,
-                height=300
-              )
+    "Audit Report",
+    audit,
+    height=300
+)
+
         st.subheader("💡 AI Opportunity Recommendation")
 
         advice = get_business_advice(best)
@@ -514,18 +546,19 @@ Wahaj Ali
     "Business Growth Plan",
     advice,
     height=220
-)    
-                
+)
+    
     else:
 
         st.warning(
-                "No businesses found."
-            )
+        "No businesses found."
+    )
+
 else:
 
     st.warning(
-            "Please enter Business Type and City."
-        )
+        "Please enter Business Type and City."
+    )
 
     
 
