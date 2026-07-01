@@ -16,6 +16,12 @@ from business_ai.advisor import get_business_advice
 from app_config import FREE_MODE
 from digital_presence.engine import calculate_presence_score
 from proposal_generator.generator import generate_proposal
+from dashboard.metrics import get_dashboard_metrics
+from dashboard.ui import show_dashboard_cards
+from dashboard.insights import generate_dashboard_insights
+from dashboard.charts import show_lead_score_chart
+
+
 from business_intelligence.engine import (
     estimate_project_value,
     recommend_services
@@ -459,12 +465,32 @@ if st.button("Find Businesses"):
              by="lead_score",
             ascending=False
         )
-          
+        # =========================
+# DASHBOARD
+# =========================
+
+        metrics = get_dashboard_metrics(df_businesses)
+
+        show_dashboard_cards(metrics)
+
+        insights = generate_dashboard_insights(df_businesses)
+
+        if insights:
+
+            st.subheader("🧠 AI Insights")
+
+            for item in insights:
+
+                st.info(item)
+
+            st.subheader("📊 Lead Score Analytics")
+
+            show_lead_score_chart(df_businesses)
             
 
-        st.subheader("📋 Found Businesses")
+            st.subheader("📋 Found Businesses")
 
-        st.dataframe(
+            st.dataframe(
                 df_businesses,
                 use_container_width=True
             )
