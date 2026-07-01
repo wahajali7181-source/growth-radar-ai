@@ -100,7 +100,42 @@ except Exception:
 # =========================
 st.set_page_config(
     page_title="Growth Radar AI",
-    layout="wide"
+    page_icon="🚀",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+st.title("🚀 Growth Radar AI")
+
+st.caption(
+    "AI Powered Business Intelligence Platform"
+)
+st.sidebar.title("Growth Radar AI")
+
+st.sidebar.markdown("---")
+
+st.sidebar.success("System Online")
+
+st.sidebar.markdown("---")
+
+page = st.sidebar.radio(
+
+    "Navigation",
+
+    [
+
+        "Dashboard",
+
+        "Business Finder",
+
+        "Reports",
+
+        "Analytics",
+
+        "Settings"
+
+    ]
+
 )
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
