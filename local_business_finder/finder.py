@@ -1,11 +1,13 @@
-
-import pandas as pd
-import requests
 from config.settings import (
     MAX_RESULTS,
     REQUEST_TIMEOUT,
     USER_AGENT
 )
+import pandas as pd
+import requests
+from services.places_client import PlacesClient
+from config.settings import GOOGLE_PLACES_API_KEY
+client = PlacesClient(GOOGLE_PLACES_API_KEY)
 
 def clean_business_name(name):
 
@@ -28,7 +30,7 @@ def find_businesses(business_type, city):
     }
 
     headers = {
-        "User-Agent": "GrowthRadarAI"
+        "User-Agent": USER_AGENT
     }
 
     try:
@@ -37,7 +39,7 @@ def find_businesses(business_type, city):
             url,
             params=params,
             headers=headers,
-            timeout=20
+            timeout=REQUEST_TIMEOUT
         )
 
         response.raise_for_status()
@@ -86,3 +88,6 @@ def find_businesses(business_type, city):
         )
 
     return pd.DataFrame(businesses)
+def use_google_places():
+
+    return GOOGLE_PLACES_API_KEY.strip() != ""

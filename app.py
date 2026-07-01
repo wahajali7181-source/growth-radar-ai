@@ -15,6 +15,11 @@ from lead_score.engine import calculate_lead_score, opportunity_level
 from business_ai.advisor import get_business_advice
 from app_config import FREE_MODE
 from digital_presence.engine import calculate_presence_score
+from proposal_generator.generator import generate_proposal
+from business_intelligence.engine import (
+    estimate_project_value,
+    recommend_services
+)
 def generate_audit(business):
 
     score = business["lead_score"]
@@ -541,13 +546,44 @@ Wahaj Ali
         st.subheader("💡 AI Opportunity Recommendation")
 
         advice = get_business_advice(best)
+        project_value = estimate_project_value(best)
+        services = recommend_services(best)
+        proposal = generate_proposal(
+        best,
+        services,
+        project_value
+)
 
         st.text_area(
-    "Business Growth Plan",
-    advice,
-    height=220
+        "Business Growth Plan",
+        advice,
+        height=220
+)       
+        st.subheader("📄 AI Proposal")
+
+        st.text_area(
+        "Proposal",
+        proposal,
+        height=350
+) 
+        st.subheader("💰 Estimated Project Value")
+
+        st.metric(
+        "Potential Project Value",
+        f"${project_value:,}"
 )
-    
+
+        st.subheader("🚀 Recommended Services")
+
+        if services:
+
+            for service in services:
+
+                st.write(f"✅ {service}")
+
+        else:
+
+            st.success("Business already has a strong digital presence.")
     else:
 
         st.warning(
