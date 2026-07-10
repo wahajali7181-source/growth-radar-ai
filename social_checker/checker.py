@@ -1,5 +1,7 @@
 import re
 import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 
 
 HEADERS = {
@@ -36,7 +38,7 @@ def check_socials(website):
         return result
 
     if not website.startswith(("http://", "https://")):
-        website = "https://" + website
+        website = "https://"+website
 
     try:
 
@@ -46,43 +48,71 @@ def check_socials(website):
             timeout=10
         )
 
-        html = response.text.lower()
+        if response.status_code != 200:
+            return result
 
         result["website"] = "✅ Found"
 
-        if "instagram.com" in html:
-            result["instagram"] = "✅ Found"
+        html = response.text
 
-        if "facebook.com" in html:
-            result["facebook"] = "✅ Found"
+        soup = BeautifulSoup(html, "lxml")
 
-        if "linkedin.com" in html:
-            result["linkedin"] = "✅ Found"
+        links = []
 
-        if "youtube.com" in html or "youtu.be" in html:
-            result["youtube"] = "✅ Found"
+        for tag in soup.find_all("a", href=True):
 
-        if "tiktok.com" in html:
-            result["tiktok"] = "✅ Found"
+            href = tag["href"].strip()
 
-        if "twitter.com" in html or "x.com" in html:
-            result["twitter"] = "✅ Found"
+            if href.startswith("/"):
 
-        if "wa.me" in html or "whatsapp" in html:
-            result["whatsapp"] = "✅ Found"
+                href = urljoin(website, href)
 
-        if "google.com/maps" in html:
-            result["google_maps"] = "✅ Found"
+            links.append(href)
 
-        email_pattern = r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"
+        for link in links:
 
-        if re.search(email_pattern, html):
-            result["email"] = "✅ Found"
+            low = link.lower()
 
-        phone_pattern = r"tel:"
+            if "instagram.com" in low:
+                result["instagram"] = link
 
-        if phone_pattern in html:
-            result["phone"] = "✅ Found"
+            elif "facebook.com" in low:
+                result["facebook"] = link
+
+            elif "linkedin.com" in low:
+                result["linkedin"] = link
+
+            elif "youtube.com" in low or "youtu.be" in low:
+                result["youtube"] = link
+
+            elif "tiktok.com" in low:
+                result["tiktok"] = link
+
+            elif "twitter.com" in low or "x.com" in low:
+                result["twitter"] = link
+
+            elif "wa.me" in low or "whatsapp" in low:
+                result["whatsapp"] = link
+
+            elif "google.com/maps" in low:
+                result["google_maps"] = link
+
+        emails = re.findall(
+            r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}",
+            html
+        )
+
+        if emails:
+            result["email"] = sorted(set(emails))[0]
+
+        phones = re.findall(
+            r"tel:([+\d\-\(\)\s]+)",
+            html,
+            re.IGNORECASE
+        )
+
+        if phones:
+            result["phone"] = phones[0].strip()
 
     except Exception:
         pass

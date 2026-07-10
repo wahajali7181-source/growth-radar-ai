@@ -19,6 +19,7 @@ from proposal_generator.generator import generate_proposal
 from dashboard.metrics import get_dashboard_metrics
 from dashboard.ui import show_dashboard_cards
 from dashboard.insights import generate_dashboard_insights
+from website_scanner.report import generate_report
 from dashboard.charts import show_lead_score_chart
 
 
@@ -500,6 +501,21 @@ if st.button("Find Businesses"):
              by="lead_score",
             ascending=False
         )
+   # =========================
+# WEBSITE INTELLIGENCE
+# =========================
+
+        website_reports = []
+
+        for _, business in df_businesses.iterrows():
+
+            report = generate_report(
+                business["website"]
+    )
+
+            website_reports.append(report)
+
+        df_businesses["website_report"] = website_reports
         # =========================
 # DASHBOARD
 # =========================
@@ -529,7 +545,38 @@ if st.button("Find Businesses"):
                 df_businesses,
                 use_container_width=True
             )
-            
+            # =========================
+# WEBSITE REPORT
+# =========================
+
+        st.subheader("🌐 Website Intelligence")
+
+        selected = st.selectbox(
+            "Select Business",
+            df_businesses["name"]
+)
+
+        business = df_businesses[
+            df_businesses["name"] == selected
+        ].iloc[0]
+
+        report = business["website_report"]
+
+        scanner = report["scanner"]
+        seo = report["seo"]
+        security = report["security"]
+
+        st.markdown("## 📊 Overview")
+
+        st.write(scanner)
+
+        st.markdown("## 🔍 SEO")
+
+        st.write(seo)
+
+        st.markdown("## 🛡 Security")
+
+        st.write(security)
 
             # Best Lead
         best = df_businesses.iloc[0]

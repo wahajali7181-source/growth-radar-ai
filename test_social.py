@@ -1,5 +1,6 @@
 from social_checker.checker import check_socials
 
-result = check_socials("python.org")
+result = check_socials("hubspot.com")
 
-print(result)
+for key, value in result.items():
+    print(f"{key}: {value}")
