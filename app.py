@@ -21,6 +21,16 @@ from dashboard.ui import show_dashboard_cards
 from dashboard.insights import generate_dashboard_insights
 from website_scanner.report import generate_report
 from dashboard.charts import show_lead_score_chart
+from ui.theme import apply_theme
+from website_scanner.health import calculate_health_score
+from ui.sidebar import show_sidebar
+from ai_engine.recommendation_engine import generate_ai_actions
+
+from ui.website_cards import (
+    show_overview_card,
+    show_seo_card,
+    show_security_card
+)
 
 
 from business_intelligence.engine import (
@@ -105,111 +115,19 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
+apply_theme()
+page = show_sidebar()
 st.title("🚀 Growth Radar AI")
 
 st.caption(
     "AI Powered Business Intelligence Platform"
 )
-st.sidebar.title("Growth Radar AI")
 
-st.sidebar.markdown("---")
 
-st.sidebar.success("System Online")
 
-st.sidebar.markdown("---")
-
-page = st.sidebar.radio(
-
-    "Navigation",
-
-    [
-
-        "Dashboard",
-
-        "Business Finder",
-
-        "Reports",
-
-        "Analytics",
-
-        "Settings"
-
-    ]
-
-)
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
-st.markdown("""
-<style>
 
-.main {
-    background-color: #0f172a;
-}
-
-.stApp {
-    background-color: #0f172a;
-}
-
-h1,h2,h3 {
-    color: white !important;
-}
-
-p,label,div {
-    color: white !important;
-}
-
-[data-testid="stMetric"] {
-    background: #1e293b;
-    padding: 15px;
-    border-radius: 15px;
-}
-
-.stButton>button {
-    background: linear-gradient(
-        90deg,
-        #3b82f6,
-        #8b5cf6
-    );
-
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-weight: bold;
-}
-
-.stDownloadButton>button {
-    background: linear-gradient(
-        90deg,
-        #10b981,
-        #14b8a6
-    );
-
-    color: white;
-    border: none;
-    border-radius: 12px;
-}
-.stDataFrame {
-    border-radius: 15px;
-}
-
-.stTextInput > div > div > input {
-    border-radius: 12px;
-    background-color: #1e293b;
-    color: white;
-}
-
-.stFileUploader {
-    background-color: #1e293b;
-    padding: 10px;
-    border-radius: 15px;
-}
-
-.stAlert {
-    border-radius: 15px;
-}
-</style>
-""", unsafe_allow_html=True)
 # =========================
 # PDF REPORT
 # =========================
@@ -561,22 +479,84 @@ if st.button("Find Businesses"):
         ].iloc[0]
 
         report = business["website_report"]
+        
+
+
+        ai_result = generate_ai_actions(report)
+       
+        ai_actions = ai_result["actions"]
+        ai_analysis = ai_result["analysis"]
+        health = calculate_health_score(report)
 
         scanner = report["scanner"]
         seo = report["seo"]
         security = report["security"]
+        st.subheader("🏥 Website Health")
+
+        c1, c2 = st.columns(2)
+
+        with c1:
+            st.metric(
+                "Overall Score",
+                f"{health['score']}/100"
+    )
+
+        with c2:
+            st.metric(
+                "Grade",
+                health["grade"]
+    )
+
+        st.progress(
+            health["score"] / 100
+)
 
         st.markdown("## 📊 Overview")
 
-        st.write(scanner)
+        show_overview_card(scanner)
 
         st.markdown("## 🔍 SEO")
 
-        st.write(seo)
+        show_seo_card(seo)
 
         st.markdown("## 🛡 Security")
 
-        st.write(security)
+        show_security_card(security)
+        st.markdown("## 🤖 AI Action Plan")
+        st.markdown("## 🧠 AI Business Consultant")
+
+        st.info(ai_analysis)
+
+        if len(ai_actions) == 0:
+
+            st.success("🎉 Excellent! No major issues detected.")
+
+        else:
+
+            if len(ai_actions) == 0:
+
+                st.success("🎉 Excellent! No major issues detected.")
+
+            else:
+
+                for action in ai_actions:
+
+                    priority = action["priority"]
+
+                    if priority == "HIGH":
+
+                        st.error(f"🔴 {action['title']}")
+                        st.write(action["description"])
+
+                    elif priority == "MEDIUM":
+
+                        st.warning(f"🟡 {action['title']}")
+                        st.write(action["description"])
+
+                    else:
+
+                        st.info(f"🔵 {action['title']}")
+                        st.write(action["description"])
 
             # Best Lead
         best = df_businesses.iloc[0]
