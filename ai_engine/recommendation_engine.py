@@ -1,110 +1,148 @@
-from ai_core.gemini_engine import ask_gemini
-from ai_prompts.recommendation_prompt import build_recommendation_prompt
+class RecommendationEngine:
 
+    def generate(
+        self,
+        scanner,
+        seo,
+        score
+    ):
+
+        recommendations = []
+
+        if scanner["status"] != "Online":
+            recommendations.append(
+                "Website appears offline. Restore it immediately."
+            )
+
+        if scanner["ssl"] != "✅ Yes":
+            recommendations.append(
+                "Enable HTTPS SSL certificate."
+            )
+
+        if scanner["meta_description"] == "Not Found":
+            recommendations.append(
+                "Add a compelling meta description."
+            )
+
+        if seo["canonical"] == "❌ Not Found":
+            recommendations.append(
+                "Add canonical URLs."
+            )
+
+        if seo["robots_txt"] == "❌ Not Found":
+            recommendations.append(
+                "Create robots.txt."
+            )
+
+        if seo["sitemap_xml"] == "❌ Not Found":
+            recommendations.append(
+                "Generate sitemap.xml."
+            )
+
+        if seo["open_graph"] == "❌ Not Found":
+            recommendations.append(
+                "Add Open Graph tags."
+            )
+
+        if seo["twitter_cards"] == "❌ Not Found":
+            recommendations.append(
+                "Add Twitter Cards."
+            )
+
+        if seo["h1_count"] == 0:
+            recommendations.append(
+                "Homepage should contain an H1 heading."
+            )
+
+        if score >= 90:
+            level = "🟢 Excellent"
+
+        elif score >= 70:
+            level = "🟡 Good"
+
+        elif score >= 40:
+            level = "🟠 Needs Improvement"
+
+        else:
+            level = "🔴 High Priority"
+
+        return {
+            "score": score,
+            "level": level,
+            "recommendations": recommendations
+        }
+
+
+recommendation_engine = RecommendationEngine()
+
+
+# ======================================================
+# AI Action Plan
+# ======================================================
 
 def generate_ai_actions(report):
 
-    scanner = report.get("scanner", {})
-    seo = report.get("seo", {})
-    security = report.get("security", {})
+    scanner = report["scanner"]
+    seo = report["seo"]
+    security = report["security"]
 
     actions = []
 
-    # =========================
-    # WEBSITE
-    # =========================
-
-    if scanner.get("status_code") != 200:
-
+    if scanner["status"] != "Online":
         actions.append({
             "priority": "HIGH",
-            "title": "Website is not accessible",
-            "description": "Fix website availability immediately."
+            "title": "Website Offline",
+            "description": "Restore the website immediately."
         })
 
-    load_time = scanner.get("load_time", 0)
-
-    try:
-        load_time = float(
-            str(load_time)
-            .replace("sec", "")
-            .replace("seconds", "")
-            .strip()
-        )
-    except:
-        load_time = 0
-
-    if load_time > 3:
-
-        actions.append({
-            "priority": "HIGH",
-            "title": "Improve Website Speed",
-            "description": "Slow websites lose visitors and revenue."
-        })
-
-    # =========================
-    # SEO
-    # =========================
-
-    if seo.get("meta_description") == "❌ Not Found":
-
-        actions.append({
-            "priority": "HIGH",
-            "title": "Add Meta Description",
-            "description": "Missing meta description hurts SEO."
-        })
-
-    if seo.get("h1_count", 0) == 0:
-
-        actions.append({
-            "priority": "MEDIUM",
-            "title": "Add H1 Heading",
-            "description": "Every page should contain one H1 heading."
-        })
-
-    # =========================
-    # SECURITY
-    # =========================
-
-    if security.get("ssl") != "✅ Enabled":
-
+    if scanner["ssl"] != "✅ Yes":
         actions.append({
             "priority": "HIGH",
             "title": "Enable SSL",
-            "description": "Protect visitors using HTTPS."
+            "description": "Install an SSL certificate and use HTTPS."
         })
 
-    if security.get("content_security_policy") != "✅ Enabled":
-
+    if seo["meta_description"] == "Not Found":
         actions.append({
             "priority": "MEDIUM",
-            "title": "Enable Content Security Policy",
-            "description": "Improve browser security."
+            "title": "Add Meta Description",
+            "description": "Write an SEO optimized meta description."
         })
 
-    if security.get("permissions_policy") == "❌ Missing":
+    if seo["canonical"] == "❌ Not Found":
+        actions.append({
+            "priority": "MEDIUM",
+            "title": "Add Canonical Tag",
+            "description": "Prevent duplicate content issues."
+        })
 
+    if seo["robots_txt"] == "❌ Not Found":
         actions.append({
             "priority": "LOW",
-            "title": "Add Permissions Policy",
-            "description": "Modern browsers recommend Permissions Policy."
+            "title": "Create robots.txt",
+            "description": "Allow search engines to crawl correctly."
         })
 
-    # =========================
-    # GEMINI AI
-    # =========================
+    if seo["sitemap_xml"] == "❌ Not Found":
+        actions.append({
+            "priority": "LOW",
+            "title": "Generate Sitemap",
+            "description": "Create sitemap.xml for indexing."
+        })
 
-    prompt = build_recommendation_prompt(report)
+    if security["content_security_policy"] == "❌ Missing":
+        actions.append({
+            "priority": "MEDIUM",
+            "title": "Improve Security Headers",
+            "description": "Add Content Security Policy."
+        })
 
-    try:
-
-        ai_analysis = ask_gemini(prompt)
-
-    except Exception as e:
-
-        ai_analysis = f"Gemini Error: {e}"
+    analysis = (
+        f"Overall website health analysis completed. "
+        f"{len(actions)} improvement opportunities detected."
+    )
 
     return {
         "actions": actions,
-        "analysis": ai_analysis
+        "analysis": analysis
     }

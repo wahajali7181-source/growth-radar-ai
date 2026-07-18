@@ -17,8 +17,9 @@ USER_AGENT = (
 # ==========================================
 # Future APIs
 # ==========================================
+import os
 
-GOOGLE_PLACES_API_KEY = ""
+GOOGLE_PLACES_API_KEY = os.getenv("GOOGLE_PLACES_API_KEY", "")
 
 GOOGLE_CSE_API_KEY = ""
 

@@ -1,8 +1,10 @@
-from seo.seo_scanner import seo_scanner
+from scanner.scanner import scanner
 
 website = "https://puregym.com"
 
-result = seo_scanner.scan(website)
+result = scanner.scan(
+    website
+)
 
 print()
 
