@@ -102,7 +102,7 @@ def generate_ai_actions(report):
             "description": "Install an SSL certificate and use HTTPS."
         })
 
-    if seo["meta_description"] == "Not Found":
+    if scanner["meta_description"] == "Not Found":
         actions.append({
             "priority": "MEDIUM",
             "title": "Add Meta Description",

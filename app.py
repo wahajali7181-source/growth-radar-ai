@@ -37,10 +37,14 @@ from business_intelligence.engine import (
     estimate_project_value,
     recommend_services
 )
-# from pages.dashboard import show as dashboard_page
-# from pages.lead_finder import show as lead_finder_page
-# from pages.reports import show as reports_page
-# from pages.ai_consultant import show as ai_consultant_page
+from pages.dashboard import show as dashboard_page
+from pages.lead_finder import show as lead_finder_page
+from pages.reports import show as reports_page
+from pages.ai_consultant import show as ai_consultant_page
+from pages.website_intelligence import show as website_page
+from pages.social_intelligence import show as social_page
+from pages.trend_intelligence import show as trend_page
+from lead_engine.database import create_tables
 def generate_audit(business):
 
     score = business["lead_score"]
@@ -119,8 +123,37 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+create_tables()
 apply_theme()
 page = show_sidebar()
+if page == "🏠 Dashboard":
+    dashboard_page()
+    st.stop()
+
+elif page == "🔍 Business Finder":
+    lead_finder_page()
+    st.stop()
+
+elif page == "🌐 Website Intelligence":
+    website_page()
+    st.stop()
+
+elif page == "📱 Social Intelligence":
+    social_page()
+    st.stop()
+
+elif page == "📈 Trend Intelligence":
+    trend_page()
+    st.stop()
+
+elif page == "📄 Reports":
+    reports_page()
+    st.stop()
+
+elif page == "⚙ Settings":
+    from pages.settings import show
+    show()
+    st.stop()
 st.title("🚀 Growth Radar AI")
 
 st.caption(
@@ -377,329 +410,7 @@ st.download_button(
     "text/csv"
 )
 
-# =========================
-# QUICK LEAD FINDER
-# =========================
-st.subheader("🔍 Quick Lead Finder")
 
-business_type = st.text_input(
-    "Business Type",
-    placeholder="Dentist, Gym, Restaurant"
-)
-
-city = st.text_input(
-    "City",
-    placeholder="Lahore"
-)
-
-if st.button("Find Businesses"):
-
-    if business_type and city:
-        from lead_engine.collector import collect_businesses
-        df_businesses = collect_businesses(
-            business_type,
-            city
-        )
-
-        if len(df_businesses) > 0:
-
-            st.success(
-                f"Found {len(df_businesses)} results"
-            )
-
-         # =========================
-# REAL LEAD SCORE
-# =========================
-
-        lead_scores = []
-        opportunities = []
-
-        for _, business in df_businesses.iterrows():
-
-            score = calculate_lead_score(
-             business
-    )
-
-            level = opportunity_level(
-            score
-    )
-
-            lead_scores.append(score)
-
-            opportunities.append(level)
-
-        df_businesses["lead_score"] = lead_scores
-
-        df_businesses["opportunity"] = opportunities
-
-        df_businesses = df_businesses.sort_values(
-             by="lead_score",
-            ascending=False
-        )
-   # =========================
-# WEBSITE INTELLIGENCE
-# =========================
-
-        website_reports = []
-
-        for _, business in df_businesses.iterrows():
-
-            report = generate_report(
-                business["website"]
-    )
-
-            website_reports.append(report)
-
-        df_businesses["website_report"] = website_reports
-        # =========================
-# DASHBOARD
-# =========================
-
-        metrics = get_dashboard_metrics(df_businesses)
-
-        show_dashboard_cards(metrics)
-
-        insights = generate_dashboard_insights(df_businesses)
-
-        if insights:
-
-            st.subheader("🧠 AI Insights")
-
-            for item in insights:
-
-                st.info(item)
-
-            st.subheader("📊 Lead Score Analytics")
-
-            show_lead_score_chart(df_businesses)
-            
-
-            st.subheader("📋 Found Businesses")
-
-            st.dataframe(
-                df_businesses,
-                use_container_width=True
-            )
-            # =========================
-# WEBSITE REPORT
-# =========================
-
-        st.subheader("🌐 Website Intelligence")
-
-        selected = st.selectbox(
-            "Select Business",
-            df_businesses["name"]
-)
-
-        business = df_businesses[
-            df_businesses["name"] == selected
-        ].iloc[0]
-
-        report = business["website_report"]
-        
-
-
-        ai_result = generate_ai_actions(report)
-       
-        ai_actions = ai_result["actions"]
-        ai_analysis = ai_result["analysis"]
-        health = calculate_health_score(report)
-
-        scanner = report["scanner"]
-        seo = report["seo"]
-        security = report["security"]
-        st.subheader("🏥 Website Health")
-
-        c1, c2 = st.columns(2)
-
-        with c1:
-            st.metric(
-                "Overall Score",
-                f"{health['score']}/100"
-    )
-
-        with c2:
-            st.metric(
-                "Grade",
-                health["grade"]
-    )
-
-        st.progress(
-            health["score"] / 100
-)
-
-        st.markdown("## 📊 Overview")
-
-        show_overview_card(scanner)
-
-        st.markdown("## 🔍 SEO")
-
-        show_seo_card(seo)
-
-        st.markdown("## 🛡 Security")
-
-        show_security_card(security)
-        st.markdown("## 🤖 AI Action Plan")
-        st.markdown("## 🧠 AI Business Consultant")
-
-        st.info(ai_analysis)
-
-        if len(ai_actions) == 0:
-
-            st.success("🎉 Excellent! No major issues detected.")
-
-        else:
-
-            if len(ai_actions) == 0:
-
-                st.success("🎉 Excellent! No major issues detected.")
-
-            else:
-
-                for action in ai_actions:
-
-                    priority = action["priority"]
-
-                    if priority == "HIGH":
-
-                        st.error(f"🔴 {action['title']}")
-                        st.write(action["description"])
-
-                    elif priority == "MEDIUM":
-
-                        st.warning(f"🟡 {action['title']}")
-                        st.write(action["description"])
-
-                    else:
-
-                        st.info(f"🔵 {action['title']}")
-                        st.write(action["description"])
-
-            # Best Lead
-        best = df_businesses.iloc[0]
-
-        presence_score = calculate_presence_score(best)
-
-        st.subheader("🏆 Best Opportunity")
-  
-        st.metric(
-        "🌐 Digital Presence Score",
-        f"{presence_score}/100"
-)
-
-        if presence_score >= 80:
-
-            st.success(
-        "Excellent Digital Presence"
-    )
-
-        elif presence_score >= 60:
-
-            st.info(
-        "Good Digital Presence"
-    )
-
-        elif presence_score >= 40:
-
-            st.warning(
-        "Needs Improvement"
-    )
-
-        else:
-
-            st.error(
-        "Poor Digital Presence"
-    )
-
-        st.success(
-    f"{best['name']} | Lead Score: {best['lead_score']} | {best['opportunity']}"
-)
-
-# Outreach Message
-        outreach = f"""
-Hi {best['name']},
-
-I found your business while analyzing businesses in {city}.
-
-I help companies improve their online visibility,
-lead generation and customer acquisition.
-
-Would you be interested in a quick discussion?
-
-Best regards,
-Wahaj Ali
-"""
-
-        st.subheader("✉ Outreach Message")
-
-        st.text_area(
-    "Copy & Send",
-    outreach,
-    height=220
-)
-
-        st.subheader("🧠 AI Business Audit")
-
-        audit = generate_audit(best)
-
-        st.text_area(
-    "Audit Report",
-    audit,
-    height=300
-)
-
-        st.subheader("💡 AI Opportunity Recommendation")
-
-        advice = get_business_advice(best)
-        project_value = estimate_project_value(best)
-        services = recommend_services(best)
-        proposal = generate_proposal(
-        best,
-        services,
-        project_value
-)
-
-        st.text_area(
-        "Business Growth Plan",
-        advice,
-        height=220
-)       
-        st.subheader("📄 AI Proposal")
-
-        st.text_area(
-        "Proposal",
-        proposal,
-        height=350
-) 
-        st.subheader("💰 Estimated Project Value")
-
-        st.metric(
-        "Potential Project Value",
-        f"${project_value:,}"
-)
-
-        st.subheader("🚀 Recommended Services")
-
-        if services:
-
-            for service in services:
-
-                st.write(f"✅ {service}")
-
-        else:
-
-            st.success("Business already has a strong digital presence.")
-    else:
-
-        st.warning(
-        "No businesses found."
-    )
-
-else:
-
-    st.warning(
-        "Please enter Business Type and City."
-    )
 
     
 
