@@ -7,7 +7,7 @@ def show_sidebar():
 
         st.markdown("# 🚀 Growth Radar AI")
 
-        st.caption("Version 0.5 Beta")
+        st.caption("Version 1.0 Beta")
 
         st.divider()
 
@@ -21,11 +21,16 @@ def show_sidebar():
 
                 "🔍 Business Finder",
 
+                "📋 CRM",
+
                 "🌐 Website Intelligence",
+
 
                 "📱 Social Intelligence",
 
                 "📈 Trend Intelligence",
+
+                "🤖 AI Employees",
 
                 "📄 Reports",
 
@@ -39,8 +44,17 @@ def show_sidebar():
 
         st.info(
 
-            "Growth Radar AI\n\nAI Powered Business Intelligence Platform"
+            """
+Growth Radar AI
 
+AI Powered Business Intelligence Platform
+
+Lead Generation
+CRM
+Website Intelligence
+AI Employees
+Website Builder
+"""
         )
 
     return page

@@ -7,10 +7,10 @@ from lead_score.engine import (
     calculate_lead_score,
     opportunity_level
 )
-
+from crm.ui import crm_card
 
 def show():
-
+    
     st.title("🔍 Business Finder")
 
     business_type = st.text_input(
@@ -93,7 +93,8 @@ def show():
         try:
 
             save_businesses(df)
-
+            from lead_engine.database import total_businesses
+            st.success(f"Database Total: {total_businesses()}")
             st.success("Businesses saved to database successfully.")
 
         except Exception as e:
@@ -108,3 +109,17 @@ def show():
             df,
             use_container_width=True
         )
+        st.divider()
+
+        st.subheader("📋 CRM Management")
+
+        selected_business = st.selectbox(
+            "Select Business",
+            df["name"]
+)
+
+        business = df[
+            df["name"] == selected_business
+        ].iloc[0]
+
+        crm_card(business)
