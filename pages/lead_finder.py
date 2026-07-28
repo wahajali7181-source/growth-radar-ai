@@ -62,7 +62,16 @@ def show():
 
         df["lead_score"] = scores
         df["opportunity"] = opportunities
+        st.subheader("Lead Score Debug")
 
+        st.write(df[[
+            "name",
+            "website",
+            "rating",
+            "reviews",
+            "lead_score",
+            "opportunity"
+]])
         # ===========================
         # Required Columns
         # ===========================

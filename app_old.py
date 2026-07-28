@@ -48,7 +48,6 @@ from pages.trend_intelligence import show as trend_page
 from lead_engine.database import create_tables
 from crm.database import create_crm_table
 from pages.crm import show as crm_page
-from core.router import route
 def generate_audit(business):
 
     score = business["lead_score"]
@@ -130,7 +129,45 @@ st.set_page_config(
 create_tables()
 create_crm_table()
 apply_theme()
+page = show_sidebar()
+if page == "🏠 Dashboard":
+    dashboard_page()
+    st.stop()
 
+elif page == "🔍 Business Finder":
+    lead_finder_page()
+    st.stop()
+    
+elif page == "📋 CRM":
+    crm_page()
+    st.stop()
+    
+elif page == "🌐 Website Intelligence":
+    website_page()
+    st.stop()
+    
+
+
+elif page == "📱 Social Intelligence":
+    social_page()
+    st.stop()
+
+elif page == "📈 Trend Intelligence":
+    trend_page()
+    st.stop()
+    
+elif page == "🤖 AI Employees":
+    ai_employees_page()
+    st.stop()    
+
+elif page == "📄 Reports":
+    reports_page()
+    st.stop()
+
+elif page == "⚙ Settings":
+    from pages.settings import show
+    show()
+    st.stop()
 st.title("🚀 Growth Radar AI")
 
 st.caption(
@@ -258,21 +295,13 @@ if not st.session_state.logged_in:
                 st.warning(
                     "Email already exists"
                 )
-    st.stop()            
-# =========================
-# USER LOGGED IN
-# =========================
 
-page = show_sidebar()
-
-route(page)
-
-st.stop()
+    st.stop()
     # =========================
 # NAVIGATION
 # =========================
 
-page = st.sidebar.radio(
+    page = st.sidebar.radio(
         "📂 Navigation",
     [
             "Dashboard",
