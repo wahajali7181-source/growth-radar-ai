@@ -1,21 +1,64 @@
 import pandas as pd
 
 
+def has_value(value):
+
+    if pd.isna(value):
+        return False
+
+    return str(value).strip() != ""
+
+
 def calculate_lead_score(business):
 
     score = 0
 
-    # =========================
+    # -------------------------
     # Website
-    # =========================
-    website = str(business.get("website", "")).strip()
+    # -------------------------
 
-    if website:
-        score += 30
+    if has_value(business.get("website")):
+        score += 20
 
-    # =========================
+    # -------------------------
+    # Phone
+    # -------------------------
+
+    if has_value(business.get("phone")):
+        score += 10
+
+    # -------------------------
+    # Email
+    # -------------------------
+
+    if has_value(business.get("email")):
+        score += 10
+
+    # -------------------------
+    # Facebook
+    # -------------------------
+
+    if has_value(business.get("facebook")):
+        score += 5
+
+    # -------------------------
+    # Instagram
+    # -------------------------
+
+    if has_value(business.get("instagram")):
+        score += 5
+
+    # -------------------------
+    # LinkedIn
+    # -------------------------
+
+    if has_value(business.get("linkedin")):
+        score += 5
+
+    # -------------------------
     # Rating
-    # =========================
+    # -------------------------
+
     rating = business.get("rating", 0)
 
     if pd.isna(rating):
@@ -24,20 +67,18 @@ def calculate_lead_score(business):
     rating = float(rating)
 
     if rating >= 4.8:
-        score += 30
-
-    elif rating >= 4.5:
-        score += 25
-
-    elif rating >= 4.0:
         score += 20
 
-    elif rating >= 3.5:
+    elif rating >= 4.5:
+        score += 15
+
+    elif rating >= 4:
         score += 10
 
-    # =========================
+    # -------------------------
     # Reviews
-    # =========================
+    # -------------------------
+
     reviews = business.get("reviews", 0)
 
     if pd.isna(reviews):
@@ -46,13 +87,13 @@ def calculate_lead_score(business):
     reviews = int(reviews)
 
     if reviews >= 500:
-        score += 40
+        score += 25
 
     elif reviews >= 200:
-        score += 30
+        score += 20
 
     elif reviews >= 100:
-        score += 20
+        score += 15
 
     elif reviews >= 50:
         score += 10

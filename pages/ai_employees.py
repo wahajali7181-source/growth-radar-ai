@@ -4,6 +4,7 @@ from ai_employees.sales_manager import show as sales_manager
 from ai_employees.creative_director import show as creative_director
 from ai_employees.proposal_writer import show as proposal_writer
 from ai_employees.seo_expert import show as seo_expert
+from ai_employees.business_consultant import show as business_consultant
 def show():
 
     st.title("🤖 AI Employees")
@@ -52,7 +53,7 @@ def show():
 
     elif employee == "🧠 AI Business Consultant":
 
-        st.info("🚧 Coming Soon")
+        business_consultant()
 
     elif employee == "📄 AI Proposal Writer":
         proposal_writer()
@@ -61,7 +62,8 @@ def show():
 
     elif employee == "🌐 AI Website Builder":
 
-        st.info("🚧 Coming Soon")
+        from ai_employees.website_builder import show
+        show()
 
     elif employee == "📈 AI SEO Expert":
         seo_expert()
@@ -70,16 +72,20 @@ def show():
 
     elif employee == "📱 AI Social Media Manager":
 
-        st.info("🚧 Coming Soon")
+        from ai_employees.social_media_manager import show
+        show()
 
     elif employee == "📧 AI Cold Outreach":
 
-        st.info("🚧 Coming Soon")
+        from ai_employees.cold_outreach import show
+        show()
 
     elif employee == "✍ AI Copywriter":
 
-        st.info("🚧 Coming Soon")
+        from ai_employees.copywriter import show
+        show()
 
     elif employee == "📊 AI Project Manager":
 
-        st.info("🚧 Coming Soon")
+        from ai_employees.project_manager import show
+        show()

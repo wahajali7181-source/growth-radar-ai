@@ -120,6 +120,32 @@ def show():
         )
         st.divider()
 
+        st.subheader("🤖 AI Business Consultant")
+
+        selected_business = st.selectbox(
+
+            "Select Business For AI Analysis",
+
+            df["name"],
+
+            key="ai_business"
+
+)
+        business = df[
+            df["name"] == selected_business
+        ].iloc[0]
+
+        st.session_state["selected_business"] = business.to_dict()
+        if st.button(
+            "Open AI Consultant",
+            use_container_width=True
+):
+
+            st.success(
+                "Business loaded successfully."
+    )
+        st.divider()
+
         st.subheader("📋 CRM Management")
 
         selected_business = st.selectbox(

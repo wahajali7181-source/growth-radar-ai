@@ -1,19 +1,114 @@
 import streamlit as st
 
-from ai_employees.ai_client import generate_response
-
+from proposal_generator.engine import generate_proposal
+from proposal_generator.pdf import generate_pdf
 
 def show():
 
-    st.subheader("📄 AI Proposal Writer")
+    st.title("📄 AI Proposal Writer")
 
-    client_name = st.text_input(
-        "Client Name"
+    st.caption(
+        "Generate professional proposals for your clients."
     )
 
-    business = st.text_input(
-        "Business Type"
+    st.divider()
+
+    # ==========================================
+    # Load Business From Session
+    # ==========================================
+
+    business_data = st.session_state.get(
+        "selected_business"
     )
+
+    consultant = st.session_state.get(
+        "consultant_result"
+    )
+
+    if business_data:
+
+        st.success(
+            "Business loaded automatically ✅"
+        )
+
+        business = business_data.get(
+            "name",
+            ""
+        )
+
+        industry = business_data.get(
+            "business_type",
+            "Other"
+        )
+
+        website = business_data.get(
+            "website",
+            ""
+        )
+
+        location = business_data.get(
+            "city",
+            ""
+        )
+
+        st.write(f"**Business:** {business}")
+        st.write(f"**Industry:** {industry}")
+        st.write(f"**Website:** {website if website else 'Not Available'}")
+        st.write(f"**Location:** {location}")
+
+    else:
+
+        business = st.text_input(
+            "Business Name"
+        )
+
+        industry = st.selectbox(
+
+            "Industry",
+
+            [
+
+                "Dentist",
+                "Real Estate",
+                "Restaurant",
+                "Gym",
+                "Medical",
+                "Construction",
+                "Education",
+                "Law Firm",
+                "Ecommerce",
+                "Other"
+
+            ]
+
+        )
+
+        website = st.text_input(
+            "Website (Optional)"
+        )
+
+        location = st.text_input(
+            "Location"
+        )
+
+    # ==========================================
+    # Services
+    # ==========================================
+
+    default_services = []
+
+    if consultant:
+
+        default_services = consultant.get(
+            "services",
+            []
+        )
+
+        st.subheader("🤖 AI Recommended Services")
+
+        for service in default_services:
+
+            st.success(service)
 
     services = st.multiselect(
 
@@ -21,96 +116,93 @@ def show():
 
         [
 
-            "Meta Ads",
-
-            "Google Ads",
-
+            "Website Development",
             "SEO",
-
-            "Website",
-
-            "Video Editing",
-
-            "Graphic Design",
-
+            "Local SEO",
+            "Google Ads",
+            "Meta Ads",
             "Social Media Management",
+            "Video Editing",
+            "Graphic Designing",
+            "Lead Generation"
 
-            "AI Automation"
+        ],
+
+        default=default_services
+
+    )
+
+    budget = st.selectbox(
+
+        "Estimated Budget",
+
+        [
+
+            "$500",
+            "$1000",
+            "$2000",
+            "$5000",
+            "Custom"
 
         ]
 
     )
 
-    budget = st.text_input(
-        "Monthly Budget ($)"
-    )
+    st.divider()
 
-    if st.button("Generate Proposal"):
+    # ==========================================
+    # Generate Proposal
+    # ==========================================
 
-        if client_name.strip() == "":
+    if st.button(
 
-            st.warning("Enter client name.")
+        "🚀 Generate Proposal",
+
+        use_container_width=True
+
+    ):
+
+        if not business:
+
+            st.warning(
+                "Please enter business name."
+            )
 
             return
 
-        prompt = f"""
-Create a professional agency proposal.
+        proposal = generate_proposal(
 
-Client:
+            business,
+            industry,
+            website,
+            location,
+            budget
 
-{client_name}
+        )
 
-Business:
+        st.subheader("📄 Proposal")
 
-{business}
+        st.text_area(
 
-Services:
+            "",
 
-{', '.join(services)}
+            proposal,
 
-Monthly Budget:
+            height=650
 
-{budget}
+        )
+        pdf = generate_pdf(proposal)
 
-Generate:
+        st.download_button(
 
-Executive Summary
+            "📄 Download Proposal PDF",
 
-Problems
+            data=pdf,
 
-Solutions
+            file_name=f"{business}_Proposal.pdf",
 
-Deliverables
+            mime="application/pdf",
 
-Timeline
+            use_container_width=True
 
-Pricing
-
-Expected ROI
-
-Why Choose Us
-
-Closing Statement
-
-Use professional formatting.
-"""
-
-        with st.spinner("Writing Proposal..."):
-
-            proposal = generate_response(
-
-                prompt=prompt,
-
-                system_prompt="""
-You are a professional Digital Marketing Agency Proposal Writer.
-
-Write premium proposals that close clients.
-
-Use markdown formatting.
-
-Never write short answers.
-"""
-
-            )
-
-        st.markdown(proposal)
+)
