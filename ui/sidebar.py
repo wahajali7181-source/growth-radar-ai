@@ -1,7 +1,45 @@
 import streamlit as st
 
+from auth.session import current_user
+
 
 def show_sidebar():
+
+    user = current_user()
+
+    navigation = [
+
+        "🏠 Dashboard",
+
+        "🔍 Business Finder",
+
+        "📋 CRM",
+
+        "🌐 Website Intelligence",
+
+        "📱 Social Intelligence",
+
+        "📈 Trend Intelligence",
+
+        "🤖 AI Employees",
+
+        "📄 Reports",
+
+        "👤 My Account",
+
+        "💳 Upgrade Plan",
+
+        "⚙ Settings"
+
+    ]
+
+    # ==========================
+    # Admin Only
+    # ==========================
+
+    if user and user["role"] == "Admin":
+
+        navigation.append("👑 Admin")
 
     with st.sidebar:
 
@@ -15,37 +53,13 @@ def show_sidebar():
 
             "Navigation",
 
-            [
-
-                "🏠 Dashboard",
-
-                "🔍 Business Finder",
-
-                "📋 CRM",
-
-                "🌐 Website Intelligence",
-
-
-                "📱 Social Intelligence",
-
-                "📈 Trend Intelligence",
-
-                "🤖 AI Employees",
-
-                "📄 Reports",
-                 
-                "👤 My Account",
-                 
-                "⚙ Settings"
-
-            ]
+            navigation
 
         )
 
         st.divider()
 
         st.info(
-
             """
 Growth Radar AI
 

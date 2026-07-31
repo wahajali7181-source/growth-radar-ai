@@ -5,6 +5,7 @@ from ui.theme import apply_theme
 from auth.database import create_users_table
 
 from subscriptions.database import create_subscription_table
+from payments.database import create_payments_table
 
 
 def initialize():
@@ -16,5 +17,7 @@ def initialize():
     create_users_table()
 
     create_subscription_table()
+    
+    create_payments_table()
 
     apply_theme()

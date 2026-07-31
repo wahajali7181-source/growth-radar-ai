@@ -47,3 +47,30 @@ def create_users_table():
     conn.commit()
 
     conn.close()
+
+
+def make_admin(email):
+
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+
+        """
+
+        UPDATE users
+
+        SET role='Admin'
+
+        WHERE email=?
+
+        """,
+
+        (email,)
+
+    )
+
+    conn.commit()
+
+    conn.close()

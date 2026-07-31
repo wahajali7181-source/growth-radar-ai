@@ -7,7 +7,6 @@ from auth.utils import (
     password_strength,
 )
 from subscriptions.database import create_default_subscription
-
 def register_user(
 
     full_name,

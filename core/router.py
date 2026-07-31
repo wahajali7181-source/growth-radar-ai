@@ -18,7 +18,8 @@ from app_pages.ai_employees import show as ai_page
 from app_pages.reports import show as reports_page
 from app_pages.settings import show as settings_page
 from app_pages.account import show as account_page
-
+from app_pages.upgrade import show as upgrade_page
+from app_pages.admin import show as admin_page
 
 def run():
 
@@ -69,10 +70,16 @@ def run():
     # ==========================
     # ROUTER
     # ==========================
+    
+    
 
     if page == "🏠 Dashboard":
 
         dashboard_page()
+        
+    elif page == "👑 Admin":
+
+        admin_page()    
 
     elif page == "🔍 Business Finder":
 
@@ -105,6 +112,11 @@ def run():
     elif page == "👤 My Account":
 
         account_page()    
+        
+    elif page == "💳 Upgrade Plan":
+
+        upgrade_page()    
+        
 
     elif page == "⚙ Settings":
 

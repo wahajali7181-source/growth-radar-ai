@@ -4,6 +4,7 @@ from core.startup import startup
 from core.initializer import initialize
 from core.router import run
 
+
 startup()
 
 initialize()

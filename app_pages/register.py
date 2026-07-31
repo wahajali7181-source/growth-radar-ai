@@ -2,15 +2,10 @@ import streamlit as st
 
 from auth.database import create_users_table
 from auth.register import register_user
-from auth.session import require_auth
 
 
 def show():
 
-
-    require_auth()
-
-    st.title("🌐 Website Intelligence")
     create_users_table()
 
     st.title("📝 Create Account")
