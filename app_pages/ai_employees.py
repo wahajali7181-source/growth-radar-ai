@@ -5,8 +5,11 @@ from ai_employees.creative_director import show as creative_director
 from ai_employees.proposal_writer import show as proposal_writer
 from ai_employees.seo_expert import show as seo_expert
 from ai_employees.business_consultant import show as business_consultant
+from auth.session import require_auth
 def show():
+    require_auth()
 
+    st.title("🌐 Website Intelligence")
     st.title("🤖 AI Employees")
 
     st.markdown("### Your Complete AI Team")

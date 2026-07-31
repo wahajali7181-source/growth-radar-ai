@@ -2,6 +2,7 @@ from website_scanner.health import calculate_health_score
 from website_scanner.seo import analyze_seo
 from website_scanner.security import analyze_security
 from website_scanner.performance import analyze_performance
+from website_scanner.technology import detect_technology
 
 
 def analyze_website(url):
@@ -13,6 +14,8 @@ def analyze_website(url):
     security = analyze_security(url)
 
     performance = analyze_performance(url)
+
+    technologies = detect_technology(url)
 
     overall = round(
 
@@ -40,6 +43,8 @@ def analyze_website(url):
 
         "security": security,
 
-        "performance": performance
+        "performance": performance,
+
+        "technologies": technologies
 
     }

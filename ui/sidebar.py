@@ -33,7 +33,9 @@ def show_sidebar():
                 "🤖 AI Employees",
 
                 "📄 Reports",
-
+                 
+                "👤 My Account",
+                 
                 "⚙ Settings"
 
             ]
