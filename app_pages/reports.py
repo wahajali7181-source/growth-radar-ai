@@ -5,7 +5,7 @@ def show():
 
     require_auth()
 
-    st.title("🌐 Website Intelligence")
+    
 
     st.title("📄 Reports")
 

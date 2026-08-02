@@ -6,6 +6,7 @@ from auth.database import create_users_table
 
 from subscriptions.database import create_subscription_table
 from payments.database import create_payments_table
+from ai.database import create_ai_tables
 
 
 def initialize():
@@ -19,5 +20,7 @@ def initialize():
     create_subscription_table()
     
     create_payments_table()
+
+    create_ai_tables()
 
     apply_theme()

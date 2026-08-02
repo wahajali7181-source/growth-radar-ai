@@ -35,6 +35,7 @@ GOOGLE_PLACES_API_KEY = os.getenv(
     GOOGLE_API_KEY
 )
 
+
 MAX_RESULTS = int(
     os.getenv(
         "MAX_RESULTS",

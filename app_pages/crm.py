@@ -11,7 +11,7 @@ from auth.session import require_auth
 def show():
     require_auth()
 
-    st.title("📋 CRM")
+    
     st.title("📋 CRM 2.0")
 
     st.caption(

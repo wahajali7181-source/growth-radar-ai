@@ -1,64 +1,93 @@
 import streamlit as st
 
+from ai.widgets.business_selector import show as business_selector
+
 from ai_employees.prompt_builder import build_sales_prompt
 from ai_employees.ai_client import generate_response
 
 
 def show():
 
-    st.subheader("💼 AI Sales Manager")
+    st.title("💼 AI Sales Consultant")
 
-    st.write(
-        "Generate a complete AI-powered sales strategy for any business."
+    st.caption(
+        "Analyze businesses and generate professional sales strategies."
     )
 
-    business_name = st.text_input(
-        "Business Name"
-    )
+    st.divider()
 
-    business_type = st.text_input(
-        "Business Type"
-    )
+    business = business_selector()
 
-    website = st.text_input(
-        "Website"
-    )
+    if business is None:
 
-    if st.button("Generate Sales Strategy"):
+        return
 
-        if business_name.strip() == "":
+    st.divider()
 
-            st.warning("Please enter Business Name.")
-            return
+    if st.button(
+
+        "🚀 Generate Sales Strategy",
+
+        use_container_width=True
+
+    ):
 
         prompt = build_sales_prompt(
-            business_name=business_name,
-            business_type=business_type,
-            website=website
+
+            business_name=business.name,
+
+            business_type=business.business_type,
+
+            website=business.website
+
         )
 
-        with st.spinner("🤖 AI Sales Manager is creating strategy..."):
+        with st.spinner(
+
+            "AI Sales Consultant is thinking..."
+
+        ):
 
             strategy = generate_response(
+
                 prompt=prompt,
+
                 system_prompt="""
-You are a world-class B2B Sales Consultant.
+You are Growth Radar AI.
 
-Generate a professional sales strategy with these sections:
+You are a Senior B2B Sales Consultant.
 
-1. Business Overview
-2. Biggest Opportunities
-3. Sales Strategy
-4. Lead Generation Plan
-5. Outreach Strategy
-6. Closing Strategy
-7. Recommended Marketing Services
-8. 30-Day Action Plan
+Generate a complete sales strategy.
 
-Write professionally using markdown headings and bullet points.
+Include:
+
+# Executive Summary
+
+# Biggest Opportunities
+
+# Lead Generation
+
+# Outreach Strategy
+
+# Closing Strategy
+
+# Recommended Services
+
+# 30-Day Action Plan
+
+Always explain WHY.
+
+Always give actionable advice.
+
+Always use markdown.
 """
+
             )
 
-        st.markdown("## 📈 AI Sales Strategy")
+        st.success(
+
+            "Sales Strategy Generated"
+
+        )
 
         st.markdown(strategy)

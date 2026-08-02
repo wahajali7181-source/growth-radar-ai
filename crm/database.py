@@ -1,4 +1,5 @@
 import sqlite3
+import pandas as pd
 
 DB_NAME = "growthradar.db"
 
@@ -87,4 +88,97 @@ def create_crm_table():
             )
 
     conn.commit()
+    conn.close()
+
+
+# ======================================
+# LOAD CRM
+# ======================================
+
+def load_crm_data():
+
+    conn = get_connection()
+
+    try:
+
+        df = pd.read_sql(
+            "SELECT * FROM crm",
+            conn
+        )
+
+    except Exception:
+
+        df = pd.DataFrame()
+
+    finally:
+
+        conn.close()
+
+    return df
+
+
+# ======================================
+# GET SINGLE BUSINESS CRM
+# ======================================
+
+def get_crm_by_business(business_id):
+
+    conn = get_connection()
+
+    try:
+
+        df = pd.read_sql(
+            "SELECT * FROM crm WHERE business_id=?",
+            conn,
+            params=(business_id,)
+        )
+
+    except Exception:
+
+        df = pd.DataFrame()
+
+    finally:
+
+        conn.close()
+
+    return df
+
+
+# ======================================
+# TOTAL CRM RECORDS
+# ======================================
+
+def total_crm():
+
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM crm"
+    )
+
+    total = cursor.fetchone()[0]
+
+    conn.close()
+
+    return total
+
+
+# ======================================
+# CLEAR CRM
+# ======================================
+
+def clear_crm():
+
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "DELETE FROM crm"
+    )
+
+    conn.commit()
+
     conn.close()
