@@ -2,75 +2,106 @@ import requests
 
 
 HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/138.0.0.0 Safari/537.36"
-    )
+
+    "User-Agent": "GrowthRadarAI"
+
 }
 
 
-def scan_security(website):
+def analyze_security(url):
 
-    result = {
-        "ssl": "❌ Disabled",
-        "server": "Unknown",
-        "hsts": "❌ Missing",
-        "content_security_policy": "❌ Missing",
-        "x_frame_options": "❌ Missing",
-        "x_content_type_options": "❌ Missing",
-        "referrer_policy": "❌ Missing",
-        "permissions_policy": "❌ Missing"
-    }
+    score = 100
 
-    if not website:
-        return result
-
-    website = website.strip()
-
-    if website.lower() == "no":
-        return result
-
-    if not website.startswith(("http://", "https://")):
-        website = "https://" + website
+    recommendations = []
 
     try:
 
         response = requests.get(
-            website,
+
+            url,
+
             headers=HEADERS,
+
             timeout=10
+
         )
 
         headers = response.headers
 
-        if website.startswith("https://"):
-            result["ssl"] = "✅ Enabled"
+        if not url.startswith("https://"):
 
-        result["server"] = headers.get(
-            "Server",
-            "Unknown"
-        )
+            score -= 30
 
-        if "Strict-Transport-Security" in headers:
-            result["hsts"] = "✅ Enabled"
+            recommendations.append(
 
-        if "Content-Security-Policy" in headers:
-            result["content_security_policy"] = "✅ Enabled"
+                "Website is not using HTTPS."
 
-        if "X-Frame-Options" in headers:
-            result["x_frame_options"] = headers["X-Frame-Options"]
+            )
 
-        if "X-Content-Type-Options" in headers:
-            result["x_content_type_options"] = headers["X-Content-Type-Options"]
+        if "Strict-Transport-Security" not in headers:
 
-        if "Referrer-Policy" in headers:
-            result["referrer_policy"] = headers["Referrer-Policy"]
+            score -= 15
 
-        if "Permissions-Policy" in headers:
-            result["permissions_policy"] = "✅ Enabled"
+            recommendations.append(
+
+                "HSTS header is missing."
+
+            )
+
+        if "Content-Security-Policy" not in headers:
+
+            score -= 20
+
+            recommendations.append(
+
+                "Content Security Policy is missing."
+
+            )
+
+        if "X-Frame-Options" not in headers:
+
+            score -= 10
+
+            recommendations.append(
+
+                "X-Frame-Options header is missing."
+
+            )
+
+        if "X-Content-Type-Options" not in headers:
+
+            score -= 10
+
+            recommendations.append(
+
+                "X-Content-Type-Options header is missing."
+
+            )
+
+        if "Referrer-Policy" not in headers:
+
+            score -= 5
+
+            recommendations.append(
+
+                "Referrer Policy header is missing."
+
+            )
 
     except Exception:
-        pass
 
-    return result
+        score = 20
+
+        recommendations.append(
+
+            "Unable to analyze website security."
+
+        )
+
+    return {
+
+        "score": max(score, 0),
+
+        "recommendations": recommendations
+
+    }

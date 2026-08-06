@@ -127,8 +127,10 @@ def load_businesses():
     finally:
 
         conn.close()
-
+    print(df.columns.tolist())
+    print(df.head())
     return df
+    
 
 
 def total_businesses():

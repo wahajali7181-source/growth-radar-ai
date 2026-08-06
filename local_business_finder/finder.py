@@ -54,6 +54,9 @@ def find_businesses(business_type, city):
             query = f"{business_type} in {city}"
 
             data = client.text_search(query)
+            print("\n========== GOOGLE SEARCH ==========")
+            print(data)
+            print("===================================\n")
 
             businesses = []
 
@@ -70,6 +73,9 @@ def find_businesses(business_type, city):
                     details = client.get_place_details(
                         place.get("place_id")
                     ).get("result", {})
+                    print("\n========== PLACE DETAILS ==========")
+                    print(details)
+                    print("===================================\n")
 
                 except Exception:
                     pass

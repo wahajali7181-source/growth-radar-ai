@@ -1,50 +1,56 @@
-# ==========================================
-# Growth Radar AI Settings
-# ==========================================
-
-APP_NAME = "Growth Radar AI"
-
-VERSION = "2.0"
-
-MAX_RESULTS = 25
-
-REQUEST_TIMEOUT = 20
-
-USER_AGENT = (
-    "GrowthRadarAI/2.0"
-)
-
-# ==========================================
-# Future APIs
-# ==========================================
 import os
 
-GOOGLE_PLACES_API_KEY = os.getenv("GOOGLE_PLACES_API_KEY", "")
+from config.loader import *
 
-GOOGLE_CSE_API_KEY = ""
+# ==========================
+# APP
+# ==========================
 
-GOOGLE_SEARCH_ENGINE_ID = ""
+APP_NAME = os.getenv("APP_NAME", "Growth Radar AI")
+APP_VERSION = os.getenv("APP_VERSION", "1.0")
+DEBUG = os.getenv("DEBUG", "False")
 
-OPENAI_API_KEY = ""
+# ==========================
+# AI
+# ==========================
 
-# ==========================================
-# Finder
-# ==========================================
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
+SERPAPI_KEY = os.getenv("SERPAPI_KEY", "")
 
-DEFAULT_COUNTRY = ""
+# ==========================
+# PAYMENTS
+# ==========================
 
-DEFAULT_LANGUAGE = "en"
+LEMON_SQUEEZY_API = os.getenv("LEMON_SQUEEZY_API", "")
+LEMON_STORE_ID = os.getenv("LEMON_STORE_ID", "")
+LEMON_WEBHOOK_SECRET = os.getenv("LEMON_WEBHOOK_SECRET", "")
 
-# ==========================================
-# Report
-# ==========================================
+# ==========================
+# GOOGLE PLACES
+# ==========================
 
-PDF_AUTHOR = "Growth Radar AI"
+GOOGLE_PLACES_API_KEY = os.getenv(
+    "GOOGLE_PLACES_API_KEY",
+    GOOGLE_API_KEY
+)
 
-PDF_COMPANY = "Growth Radar AI"
 
-# ==========================================
-# Debug
-# ==========================================
+MAX_RESULTS = int(
+    os.getenv(
+        "MAX_RESULTS",
+        "20"
+    )
+)
 
-DEBUG = True
+REQUEST_TIMEOUT = int(
+    os.getenv(
+        "REQUEST_TIMEOUT",
+        "20"
+    )
+)
+
+USER_AGENT = os.getenv(
+    "USER_AGENT",
+    "GrowthRadarAI/1.0"
+)

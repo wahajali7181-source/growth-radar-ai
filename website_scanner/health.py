@@ -1,91 +1,84 @@
-def calculate_health_score(report):
+import requests
 
-    scanner = report["scanner"]
-    seo = report["seo"]
-    security = report["security"]
 
-    score = 0
+def calculate_health_score(url):
 
-    # ======================
-    # WEBSITE (30 Marks)
-    # ======================
+    score = 100
 
-    if scanner["status"] == "🟢 Online":
-        score += 10
+    recommendations = []
 
-    if scanner["ssl"] == "✅ Enabled":
-        score += 10
+    try:
 
-    if scanner["favicon"] != "❌ Not Found":
-        score += 5
+        response = requests.get(
 
-    if scanner["meta_description"] != "Not Found":
-        score += 5
+            url,
 
-    # ======================
-    # SEO (40 Marks)
-    # ======================
+            timeout=10,
 
-    if seo["canonical"] != "❌ Not Found":
-        score += 8
+            headers={
 
-    if seo["open_graph"] == "✅ Present":
-        score += 8
+                "User-Agent": "GrowthRadarAI"
 
-    if seo["twitter_cards"] == "✅ Present":
-        score += 5
+            }
 
-    if seo["robots_txt"] != "❌ Not Found":
-        score += 7
+        )
 
-    if seo["sitemap_xml"] != "❌ Not Found":
-        score += 7
+        if response.status_code != 200:
 
-    if seo["h1_count"] > 0:
-        score += 5
+            score -= 20
 
-    # ======================
-    # SECURITY (30 Marks)
-    # ======================
+            recommendations.append(
 
-    if security["hsts"] == "✅ Enabled":
-        score += 8
+                "Website returned an unexpected status."
 
-    if security["content_security_policy"] == "✅ Enabled":
-        score += 8
+            )
 
-    if security["x_frame_options"] != "❌ Missing":
-        score += 5
+        if not url.startswith("https://"):
 
-    if security["x_content_type_options"] != "❌ Missing":
-        score += 5
+            score -= 20
 
-    if security["referrer_policy"] != "❌ Missing":
-        score += 4
+            recommendations.append(
 
-    # ======================
-    # Grade
-    # ======================
+                "Website is not using HTTPS."
 
-    if score >= 90:
-        grade = "A+"
+            )
 
-    elif score >= 80:
-        grade = "A"
+        html = response.text.lower()
 
-    elif score >= 70:
-        grade = "B"
+        if "<title>" not in html:
 
-    elif score >= 60:
-        grade = "C"
+            score -= 10
 
-    elif score >= 50:
-        grade = "D"
+            recommendations.append(
 
-    else:
-        grade = "F"
+                "Missing page title."
+
+            )
+
+        if "meta name=\"description\"" not in html:
+
+            score -= 10
+
+            recommendations.append(
+
+                "Missing meta description."
+
+            )
+
+    except Exception:
+
+        score = 10
+
+        recommendations.append(
+
+            "Website could not be reached."
+
+        )
 
     return {
-        "score": score,
-        "grade": grade
+
+        "score": max(score, 0),
+
+        "recommendations": recommendations
+
     }
