@@ -3,9 +3,7 @@ from bs4 import BeautifulSoup
 
 
 HEADERS = {
-
-    "User-Agent": "GrowthRadarAI"
-
+    "User-Agent": "Mozilla/5.0 GrowthRadarAI SEO Scanner"
 }
 
 
@@ -23,7 +21,7 @@ def analyze_seo(url):
 
             headers=HEADERS,
 
-            timeout=10
+            timeout=15,
 
         )
 
@@ -31,7 +29,7 @@ def analyze_seo(url):
 
             response.text,
 
-            "html.parser"
+            "html.parser",
 
         )
 
@@ -39,14 +37,30 @@ def analyze_seo(url):
         # Title
         # -------------------------
 
-        if not soup.title:
+        title = soup.title.string.strip() if soup.title and soup.title.string else ""
+
+        if not title:
 
             score -= 20
 
             recommendations.append(
-
                 "Missing page title."
+            )
 
+        elif len(title) < 30:
+
+            score -= 5
+
+            recommendations.append(
+                "Page title is too short."
+            )
+
+        elif len(title) > 60:
+
+            score -= 5
+
+            recommendations.append(
+                "Page title is too long."
             )
 
         # -------------------------
@@ -57,48 +71,56 @@ def analyze_seo(url):
 
             "meta",
 
-            attrs={
-
-                "name": "description"
-
-            }
+            attrs={"name": "description"}
 
         )
 
-        if not meta:
+        description = meta.get("content", "").strip() if meta else ""
+
+        if not description:
 
             score -= 20
 
             recommendations.append(
-
                 "Missing meta description."
+            )
 
+        elif len(description) < 70:
+
+            score -= 5
+
+            recommendations.append(
+                "Meta description is too short."
+            )
+
+        elif len(description) > 160:
+
+            score -= 5
+
+            recommendations.append(
+                "Meta description is too long."
             )
 
         # -------------------------
         # H1
         # -------------------------
 
-        h1 = soup.find_all("h1")
+        h1_tags = soup.find_all("h1")
 
-        if len(h1) == 0:
+        if len(h1_tags) == 0:
 
             score -= 15
 
             recommendations.append(
-
                 "No H1 heading found."
-
             )
 
-        elif len(h1) > 1:
+        elif len(h1_tags) > 1:
 
             score -= 5
 
             recommendations.append(
-
                 "Multiple H1 headings detected."
-
             )
 
         # -------------------------
@@ -107,44 +129,94 @@ def analyze_seo(url):
 
         images = soup.find_all("img")
 
-        missing_alt = 0
+        if images:
 
-        for img in images:
-
-            if not img.get("alt"):
-
-                missing_alt += 1
-
-        if missing_alt:
-
-            score -= min(
-
-                20,
-
-                missing_alt
-
+            missing_alt = sum(
+                1 for img in images if not img.get("alt")
             )
+
+            if missing_alt:
+
+                penalty = min(20, missing_alt)
+
+                score -= penalty
+
+                recommendations.append(
+                    f"{missing_alt} image(s) are missing ALT text."
+                )
+
+        # -------------------------
+        # Canonical
+        # -------------------------
+
+        canonical = soup.find(
+
+            "link",
+
+            attrs={"rel": "canonical"}
+
+        )
+
+        if canonical is None:
+
+            score -= 5
 
             recommendations.append(
-
-                f"{missing_alt} images are missing ALT text."
-
+                "Canonical tag is missing."
             )
 
-    except Exception:
+        # -------------------------
+        # Open Graph
+        # -------------------------
+
+        og = soup.find(
+
+            "meta",
+
+            attrs={"property": "og:title"}
+
+        )
+
+        if og is None:
+
+            score -= 5
+
+            recommendations.append(
+                "Open Graph tags are missing."
+            )
+
+        # -------------------------
+        # Robots
+        # -------------------------
+
+        robots = soup.find(
+
+            "meta",
+
+            attrs={"name": "robots"}
+
+        )
+
+        if robots is None:
+
+            score -= 3
+
+            recommendations.append(
+                "Robots meta tag not found."
+            )
+
+    except Exception as e:
 
         score = 20
 
         recommendations.append(
-
-            "Unable to analyze SEO."
-
+            f"SEO scan failed: {str(e)}"
         )
 
     return {
 
-        "score": max(score, 0),
+        "score": max(0, min(score, 100)),
 
-        "recommendations": recommendations
+        "recommendations": recommendations,
 
     }

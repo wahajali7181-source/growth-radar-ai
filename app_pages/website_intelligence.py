@@ -16,6 +16,8 @@ from subscriptions.usage import (
 
 from website_scanner.engine import analyze_website
 from website_scanner.advisor import generate_ai_summary
+from website_reports.report_builder import build_report
+from website_reports.pdf_generator import generate_pdf
 
 
 def show():
@@ -171,7 +173,22 @@ def show():
                 report
 
             )
+        pdf_report = build_report(
 
+            report,
+
+            ai
+
+)
+
+        pdf_file = generate_pdf(
+
+            pdf_report,
+
+            "website_report.pdf"
+
+)
+    
         # ===============================
         # USAGE +1
         # ===============================
@@ -357,3 +374,26 @@ def show():
                         "No issues found."
 
                     )
+        st.subheader("📄 Export Report")
+
+        with open(
+
+            pdf_file,
+
+            "rb"
+
+        ) as file:
+
+            st.download_button(
+
+                "⬇ Download PDF Report",
+
+                data=file,
+
+                file_name="GrowthRadar_Website_Report.pdf",
+
+                mime="application/pdf",
+
+                use_container_width=True
+
+    )            

@@ -2,13 +2,13 @@ import requests
 
 
 HEADERS = {
-    "User-Agent": "GrowthRadarAI"
+    "User-Agent": "Mozilla/5.0 GrowthRadarAI Technology Scanner"
 }
 
 
 def detect_technology(url):
 
-    technologies = []
+    technologies = set()
 
     try:
 
@@ -18,7 +18,9 @@ def detect_technology(url):
 
             headers=HEADERS,
 
-            timeout=10
+            timeout=15,
+
+            allow_redirects=True,
 
         )
 
@@ -26,88 +28,124 @@ def detect_technology(url):
 
         headers = response.headers
 
+        server = headers.get("Server", "").lower()
+
+        powered = headers.get("X-Powered-By", "").lower()
+
         # ==========================
-        # WordPress
+        # CMS
         # ==========================
 
         if "wp-content" in html or "wp-includes" in html:
+            technologies.add("WordPress")
 
-            technologies.append("WordPress")
+        if "cdn.shopify.com" in html or "shopify" in powered:
+            technologies.add("Shopify")
 
-        # ==========================
-        # Shopify
-        # ==========================
+        if "wixstatic" in html:
+            technologies.add("Wix")
 
-        if "cdn.shopify.com" in html:
+        if "squarespace" in html:
+            technologies.add("Squarespace")
 
-            technologies.append("Shopify")
-
-        # ==========================
-        # React
-        # ==========================
-
-        if "__next" in html or "react" in html:
-
-            technologies.append("React")
+        if "webflow" in html:
+            technologies.add("Webflow")
 
         # ==========================
-        # Bootstrap
+        # Frameworks
+        # ==========================
+
+        if "__next" in html:
+            technologies.add("Next.js")
+
+        if "_nuxt" in html:
+            technologies.add("Nuxt.js")
+
+        if "react" in html:
+            technologies.add("React")
+
+        if "vue" in html:
+            technologies.add("Vue.js")
+
+        if "angular" in html:
+            technologies.add("Angular")
+
+        # ==========================
+        # CSS
         # ==========================
 
         if "bootstrap" in html:
+            technologies.add("Bootstrap")
 
-            technologies.append("Bootstrap")
+        if "tailwind" in html:
+            technologies.add("Tailwind CSS")
+
+        if "bulma" in html:
+            technologies.add("Bulma")
 
         # ==========================
-        # jQuery
+        # JavaScript
         # ==========================
 
         if "jquery" in html:
-
-            technologies.append("jQuery")
-
-        # ==========================
-        # Google Analytics
-        # ==========================
-
-        if "googletagmanager" in html or "google-analytics" in html:
-
-            technologies.append("Google Analytics")
+            technologies.add("jQuery")
 
         # ==========================
-        # Facebook Pixel
+        # Analytics
         # ==========================
+
+        if "googletagmanager" in html:
+            technologies.add("Google Tag Manager")
+
+        if "google-analytics" in html or "gtag(" in html:
+            technologies.add("Google Analytics")
 
         if "connect.facebook.net" in html:
+            technologies.add("Facebook Pixel")
 
-            technologies.append("Facebook Pixel")
+        if "hotjar" in html:
+            technologies.add("Hotjar")
 
-        # ==========================
-        # Cloudflare
-        # ==========================
-
-        if headers.get("server", "").lower().startswith("cloudflare"):
-
-            technologies.append("Cloudflare")
+        if "clarity.ms" in html:
+            technologies.add("Microsoft Clarity")
 
         # ==========================
-        # Google Fonts
+        # CDN
+        # ==========================
+
+        if "cloudflare" in server:
+            technologies.add("Cloudflare")
+
+        if "cloudfront" in server:
+            technologies.add("CloudFront")
+
+        # ==========================
+        # Fonts
         # ==========================
 
         if "fonts.googleapis.com" in html:
-
-            technologies.append("Google Fonts")
-
-        # ==========================
-        # Font Awesome
-        # ==========================
+            technologies.add("Google Fonts")
 
         if "font-awesome" in html or "fontawesome" in html:
+            technologies.add("Font Awesome")
 
-            technologies.append("Font Awesome")
+        # ==========================
+        # Backend
+        # ==========================
+
+        if "php" in powered:
+            technologies.add("PHP")
+
+        if "asp.net" in powered:
+            technologies.add("ASP.NET")
+
+        if "express" in powered:
+            technologies.add("Express.js")
+
+        if "laravel" in html:
+            technologies.add("Laravel")
 
     except Exception:
+        return []
 
-        pass
-
-    return sorted(list(set(technologies)))
+    return sorted(technologies)

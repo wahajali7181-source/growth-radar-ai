@@ -22,7 +22,17 @@ PLANS = {
 
             "ai_employees": False,
 
-            "website_builder": False
+            "website_builder": False,
+
+            "social_intelligence": False,
+
+            "trend_intelligence": False,
+
+            "team_members": False,
+
+            "white_label": False,
+
+            "api_access": False
 
         }
 
@@ -50,7 +60,17 @@ PLANS = {
 
             "ai_employees": False,
 
-            "website_builder": False
+            "website_builder": False,
+
+            "social_intelligence": 50,
+
+            "trend_intelligence": 50,
+
+            "team_members": False,
+
+            "white_label": False,
+
+            "api_access": False
 
         }
 
@@ -78,7 +98,17 @@ PLANS = {
 
             "ai_employees": True,
 
-            "website_builder": True
+            "website_builder": True,
+
+            "social_intelligence": -1,
+
+            "trend_intelligence": -1,
+
+            "team_members": False,
+
+            "white_label": False,
+
+            "api_access": False
 
         }
 
@@ -108,6 +138,10 @@ PLANS = {
 
             "website_builder": True,
 
+            "social_intelligence": -1,
+
+            "trend_intelligence": -1,
+
             "team_members": True,
 
             "white_label": True,
@@ -123,9 +157,13 @@ PLANS = {
 
 def get_plan(plan_name):
 
+    if not plan_name:
+
+        return PLANS["FREE"]
+
     return PLANS.get(
 
-        plan_name.upper(),
+        str(plan_name).upper(),
 
         PLANS["FREE"]
 

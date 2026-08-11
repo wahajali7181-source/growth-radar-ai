@@ -34,18 +34,43 @@ def show_sidebar():
     ]
 
     # ==========================
-    # Admin Only
+    # ADMIN ONLY
     # ==========================
 
     if user and user["role"] == "Admin":
 
-        navigation.append("👑 Admin")
+        navigation.append(
+            "👑 Admin"
+        )
+
+    # ==========================
+    # INTERNAL NAVIGATION
+    # ==========================
+
+    requested_page = st.session_state.pop(
+        "requested_page",
+        None
+    )
+
+    if requested_page in navigation:
+
+        st.session_state[
+            "navigation_radio"
+        ] = requested_page
+
+    # ==========================
+    # SIDEBAR
+    # ==========================
 
     with st.sidebar:
 
-        st.markdown("# 🚀 Growth Radar AI")
+        st.markdown(
+            "# 🚀 Growth Radar AI"
+        )
 
-        st.caption("Version 1.0 Beta")
+        st.caption(
+            "Version 1.0 Beta"
+        )
 
         st.divider()
 
@@ -53,7 +78,9 @@ def show_sidebar():
 
             "Navigation",
 
-            navigation
+            navigation,
+
+            key="navigation_radio"
 
         )
 

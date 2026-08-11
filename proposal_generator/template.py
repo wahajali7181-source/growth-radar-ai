@@ -1,79 +1,157 @@
 PROPOSAL_TEMPLATE = """
-# GROWTH RADAR AI
+============================================================
+                    GROWTH RADAR AI
+          AI Powered Business Growth Proposal
+============================================================
 
-## Digital Growth Proposal
+Proposal Date
+------------------------------------------------------------
+{proposal_date}
 
-Prepared For:
+CLIENT INFORMATION
+------------------------------------------------------------
+
+Business Name
 {business}
 
-Industry:
+Industry
 {industry}
 
-Website:
+Website
 {website}
 
-Location:
+Location
 {location}
 
-----------------------------------------
-
+============================================================
 EXECUTIVE SUMMARY
+============================================================
 
-Thank you for giving Growth Radar AI the opportunity to analyze your business.
+Thank you for choosing Growth Radar AI.
 
-After reviewing your business profile, we identified several growth opportunities that can increase your online visibility, lead generation, and monthly revenue.
+After reviewing your business, we identified multiple
+opportunities to increase visibility, improve lead quality,
+boost conversions, and create a scalable digital growth
+system.
 
-----------------------------------------
+============================================================
+CURRENT BUSINESS ANALYSIS
+============================================================
 
+{business_summary}
+
+============================================================
 RECOMMENDED SERVICES
+============================================================
 
 {services}
 
-----------------------------------------
+============================================================
+PROJECT OBJECTIVES
+============================================================
 
-PROJECT TIMELINE
+• Increase qualified leads
 
-Week 1
+• Improve online visibility
+
+• Build customer trust
+
+• Increase conversion rate
+
+• Improve website performance
+
+• Scale business growth
+
+============================================================
+IMPLEMENTATION ROADMAP
+============================================================
+
+PHASE 1
+
 • Business Audit
-• Strategy Planning
 
-Week 2
-• Campaign Setup
+• Competitor Research
+
+• Growth Strategy
+
+------------------------------------------------------------
+
+PHASE 2
+
 • Website Optimization
 
-Week 3
-• SEO & Content Marketing
+• Local SEO
 
-Week 4
-• Performance Optimization
+• Social Media Optimization
 
-----------------------------------------
+------------------------------------------------------------
 
+PHASE 3
+
+• Lead Generation
+
+• Paid Advertising
+
+• Conversion Optimization
+
+------------------------------------------------------------
+
+PHASE 4
+
+• Performance Tracking
+
+• Monthly Reporting
+
+• Growth Scaling
+
+============================================================
 EXPECTED RESULTS
+============================================================
 
-• More Qualified Leads
+✓ More Qualified Leads
 
-• Better Online Visibility
+✓ Higher Google Visibility
 
-• Higher Conversion Rate
+✓ Better SEO Ranking
 
-• Strong Brand Presence
+✓ Better Customer Engagement
 
-----------------------------------------
+✓ Higher Conversion Rate
 
+✓ Increased Monthly Revenue
+
+============================================================
+PROJECT INVESTMENT
+============================================================
+
+Estimated Budget
+
+{project_value}
+
+============================================================
 WHY GROWTH RADAR AI
+============================================================
 
-✓ AI Powered Analysis
+✓ AI Powered Business Intelligence
+
+✓ Professional Business Audits
+
+✓ Growth Strategy
+
+✓ Proposal Automation
+
+✓ CRM Integration
+
+✓ Website Intelligence
 
 ✓ Data Driven Marketing
 
-✓ ROI Focused Strategy
-
-✓ Transparent Reporting
-
-----------------------------------------
-
-Thank you.
+============================================================
+Prepared By
 
 Growth Radar AI
+
+Professional AI Growth Platform
+
+============================================================
 """

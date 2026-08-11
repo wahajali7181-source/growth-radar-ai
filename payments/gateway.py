@@ -1,48 +1,164 @@
+# payment/gateway.py
+
+import os
+
+
+# ==========================================================
+# LEMON SQUEEZY
+# ==========================================================
+
+LEMON_SQUEEZY_STORE_URL = os.getenv(
+    "LEMON_SQUEEZY_STORE_URL",
+    ""
+)
+
+
+# ==========================================================
+# LEMON SQUEEZY CHECKOUT URLS
+# ==========================================================
+#
+# IMPORTANT:
+# Replace these with your actual Lemon Squeezy checkout URLs.
+#
+# Example:
+# https://your-store.lemonsqueezy.com/checkout/buy/xxxx
+#
+# Keep them empty until your actual variants are ready.
+# ==========================================================
+
+LEMON_SQUEEZY_CHECKOUTS = {
+
+    "STARTER": os.getenv(
+        "LEMON_STARTER_CHECKOUT",
+        ""
+    ),
+
+    "PROFESSIONAL": os.getenv(
+        "LEMON_PROFESSIONAL_CHECKOUT",
+        ""
+    ),
+
+    "AGENCY": os.getenv(
+        "LEMON_AGENCY_CHECKOUT",
+        ""
+
+    ),
+
+}
+
+
+# ==========================================================
+# PAYMENT METHODS
+# ==========================================================
+
 PAYMENT_METHODS = {
 
-    "JazzCash": {
-        "account_title": "Growth Radar AI",
-        "number": "03XXXXXXXXX",
-        "instructions": (
-            "Send payment via JazzCash and enter the Transaction ID below."
-        ),
-    },
+    "Lemon Squeezy": {
 
-    "Easypaisa": {
-        "account_title": "Growth Radar AI",
-        "number": "03XXXXXXXXX",
-        "instructions": (
-            "Send payment via Easypaisa and enter the Transaction ID below."
+        "type": "online",
+
+        "description": (
+            "Secure online payment using "
+            "Visa, Mastercard and other supported "
+            "payment methods."
         ),
+
+        "checkout_available": True
+
     },
 
     "Bank Transfer": {
-        "account_title": "Growth Radar AI",
-        "bank_name": "Meezan Bank",
-        "iban": "PK00MEEZ0000000000000000",
-        "instructions": (
-            "Transfer the amount to the bank account and enter the Transaction ID."
+
+        "type": "manual",
+
+        "account_title": (
+            os.getenv(
+                "BANK_ACCOUNT_TITLE",
+                "Growth Radar AI"
+            )
         ),
-    },
 
-}
+        "bank_name": (
+            os.getenv(
+                "BANK_NAME",
+                ""
+            )
+        ),
 
+        "account_number": (
+            os.getenv(
+                "BANK_ACCOUNT_NUMBER",
+                ""
+            )
+        ),
 
-PLANS = {
+        "iban": (
+            os.getenv(
+                "BANK_IBAN",
+                ""
+            )
+        ),
 
-    "Starter": {
-        "price": 2500,
-        "duration": "Monthly"
-    },
+        "instructions": (
+            "Transfer the subscription amount "
+            "to the provided bank account and "
+            "submit your transaction/reference ID "
+            "for verification."
+        ),
 
-    "Pro": {
-        "price": 5000,
-        "duration": "Monthly"
-    },
+        "checkout_available": True
 
-    "Agency": {
-        "price": 12000,
-        "duration": "Monthly"
     }
 
 }
+
+
+# ==========================================================
+# GET CHECKOUT URL
+# ==========================================================
+
+def get_checkout_url(plan_name):
+
+    if not plan_name:
+
+        return None
+
+    plan_name = plan_name.upper().strip()
+
+    return LEMON_SQUEEZY_CHECKOUTS.get(
+        plan_name
+    )
+
+
+# ==========================================================
+# CHECK ONLINE PAYMENT AVAILABILITY
+# ==========================================================
+
+def has_online_checkout(plan_name):
+
+    url = get_checkout_url(
+        plan_name
+    )
+
+    return bool(url)
+
+
+# ==========================================================
+# GET BANK TRANSFER DETAILS
+# ==========================================================
+
+def get_bank_transfer_details():
+
+    return PAYMENT_METHODS.get(
+        "Bank Transfer",
+        {}
+    )
+
+
+# ==========================================================
+# GET ALL PAYMENT METHODS
+# ==========================================================
+
+def get_payment_methods():
+
+    return PAYMENT_METHODS

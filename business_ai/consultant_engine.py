@@ -7,111 +7,281 @@ def analyze_business(
 
 ):
 
-    health = 40
+    industry = (industry or "").lower()
+
+    health = 50
 
     strengths = []
-
     weaknesses = []
-
+    opportunities = []
     services = []
+
+    # ==========================================
+    # Website
+    # ==========================================
 
     if website:
 
-        health += 25
+        health += 20
 
         strengths.append(
-            "Website Available"
+            "Business already has a website."
         )
 
     else:
 
+        health -= 10
+
         weaknesses.append(
-            "No Website"
+            "Business has no professional website."
         )
 
         services.append(
             "Website Development"
         )
 
-    industry = industry.lower()
+    # ==========================================
+    # Industry Recommendations
+    # ==========================================
 
     if industry == "dentist":
 
-        services += [
+        services.extend([
 
             "Local SEO",
-            "Google Ads",
-            "Meta Ads"
 
-        ]
+            "Google Ads",
+
+            "Meta Ads",
+
+            "Google Business Profile Optimization",
+
+            "Reputation Management",
+
+        ])
+
+        opportunities.extend([
+
+            "Rank for local dental searches.",
+
+            "Increase appointment bookings.",
+
+            "Improve Google Reviews.",
+
+        ])
 
     elif industry == "real estate":
 
-        services += [
+        services.extend([
 
             "Lead Generation",
-            "Meta Ads",
-            "Landing Pages"
 
-        ]
+            "Landing Pages",
+
+            "Meta Ads",
+
+            "CRM Automation",
+
+            "Property Video Marketing",
+
+        ])
+
+        opportunities.extend([
+
+            "Generate seller leads.",
+
+            "Generate buyer leads.",
+
+            "Automate follow-up.",
+
+        ])
 
     elif industry == "restaurant":
 
-        services += [
+        services.extend([
 
-            "Social Media",
+            "Social Media Marketing",
+
+            "Meta Ads",
+
+            "Google Business Optimization",
+
             "Food Photography",
-            "Meta Ads"
 
-        ]
+            "Reels Marketing",
+
+        ])
+
+        opportunities.extend([
+
+            "Increase dine-in traffic.",
+
+            "Boost food delivery orders.",
+
+            "Improve customer engagement.",
+
+        ])
+
+    elif industry == "gym":
+
+        services.extend([
+
+            "Meta Ads",
+
+            "Transformation Video Editing",
+
+            "Landing Pages",
+
+            "Lead Funnel",
+
+        ])
 
     else:
 
-        services += [
+        services.extend([
 
             "SEO",
-            "Digital Marketing"
 
-        ]
+            "Google Ads",
+
+            "Meta Ads",
+
+            "Website Optimization",
+
+        ])
+
+    # ==========================================
+    # Generic AI Analysis
+    # ==========================================
 
     weaknesses.append(
-        "Growth Strategy Needed"
-    )
 
-    revenue = f"${health * 100}"
-
-    priority = (
-
-        "HIGH"
-
-        if health < 70
-
-        else "MEDIUM"
+        "No clear digital growth strategy."
 
     )
+
+    weaknesses.append(
+
+        "Lead generation can be improved."
+
+    )
+
+    strengths.append(
+
+        "Business has growth potential."
+
+    )
+
+    opportunities.append(
+
+        "AI automation can reduce manual work."
+
+    )
+
+    opportunities.append(
+
+        "Digital marketing can increase revenue."
+
+    )
+
+    opportunities.append(
+
+        "Better branding can improve trust."
+
+    )
+
+    # ==========================================
+    # Scores
+    # ==========================================
+
+    health = max(
+
+        min(
+
+            health,
+
+            95
+
+        ),
+
+        30
+
+    )
+
+    if health >= 85:
+
+        priority = "LOW"
+
+    elif health >= 70:
+
+        priority = "MEDIUM"
+
+    else:
+
+        priority = "HIGH"
 
     closing = min(
 
-        health + 20,
+        95,
 
-        95
+        health + 15
 
     )
+
+    revenue = f"${health * 150}"
+
+    # ==========================================
+    # Return
+    # ==========================================
 
     return {
 
         "health": health,
 
-        "strengths": strengths,
+        "priority": priority,
 
-        "weaknesses": weaknesses,
-
-        "services": list(set(services)),
+        "closing": closing,
 
         "revenue": revenue,
 
-        "priority": priority,
+        "strengths": sorted(
 
-        "closing": closing
+            list(
+
+                set(strengths)
+
+            )
+
+        ),
+
+        "weaknesses": sorted(
+
+            list(
+
+                set(weaknesses)
+
+            )
+
+        ),
+
+        "opportunities": sorted(
+
+            list(
+
+                set(opportunities)
+
+            )
+
+        ),
+
+        "services": sorted(
+
+            list(
+
+                set(services)
+
+            )
+
+        ),
 
     }

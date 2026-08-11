@@ -1,11 +1,17 @@
 def build_sales_prompt(
     business_name,
     business_type,
-    website
+    website,
+    country,
+    target_audience,
+    goal,
+    budget,
 ):
 
     return f"""
-You are an expert Sales Manager.
+You are one of the world's best B2B Sales Consultants.
+
+Business Information
 
 Business Name:
 {business_name}
@@ -16,27 +22,61 @@ Business Type:
 Website:
 {website}
 
-Generate:
+Country:
+{country}
 
-1. Business Analysis
+Target Audience:
+{target_audience}
 
-2. Biggest Problems
+Business Goal:
+{goal}
 
-3. Growth Opportunities
+Monthly Marketing Budget:
+{budget}
 
-4. Services To Sell
+Create a professional report using markdown.
 
-5. Cold Email
+Include these sections:
 
-6. LinkedIn Message
+# Business Overview
 
-7. WhatsApp Pitch
+# Current Business Situation
 
-8. Discovery Call Questions
+# Biggest Challenges
 
-9. Objection Handling
+# Strengths
 
-10. Closing Strategy
+# Weaknesses
 
-Write professionally.
+# Growth Opportunities
+
+# Target Customer Profile
+
+# Sales Strategy
+
+# Lead Generation Strategy
+
+# Outreach Strategy
+
+# Cold Email
+
+# LinkedIn Outreach
+
+# WhatsApp Pitch
+
+# Discovery Call Questions
+
+# Objection Handling
+
+# Closing Strategy
+
+# Recommended Digital Marketing Services
+
+# 30-Day Action Plan
+
+Be practical.
+
+Avoid generic advice.
+
+Write like a senior business consultant.
 """

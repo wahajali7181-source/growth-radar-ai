@@ -1,5 +1,6 @@
 from business_ai.consultant_engine import analyze_business
 from proposal_generator.template import PROPOSAL_TEMPLATE
+from services.ai_service import ask_ai
 
 
 def generate_proposal(
@@ -8,7 +9,7 @@ def generate_proposal(
     industry,
     website,
     location,
-    budget
+    budget,
 
 ):
 
@@ -17,11 +18,19 @@ def generate_proposal(
         business,
         industry,
         website,
-        location
+        location,
 
     )
 
-    services = analysis["services"]
+    services = analysis.get("services", [])
+
+    if not services:
+
+        services = [
+            "Digital Marketing",
+            "SEO",
+            "Meta Ads",
+        ]
 
     service_text = "\n".join(
 
@@ -31,9 +40,57 @@ def generate_proposal(
 
     )
 
-    if not service_text:
+    # ----------------------------------
+    # AI Executive Summary
+    # ----------------------------------
 
-        service_text = "• Digital Marketing"
+    prompt = f"""
+Business:
+{business}
+
+Industry:
+{industry}
+
+Website:
+{website}
+
+Location:
+{location}
+
+Monthly Budget:
+{budget}
+
+Recommended Services:
+{service_text}
+
+Write:
+
+1. Executive Summary
+
+2. Current Business Situation
+
+3. Main Growth Opportunities
+
+4. Expected ROI
+
+Professional tone.
+"""
+
+    ai_summary = ask_ai(
+
+        prompt=prompt,
+
+        system_prompt="""
+You are a senior business consultant.
+
+Write concise, premium-quality business proposals.
+
+Never use generic advice.
+
+Return markdown only.
+""",
+
+    )
 
     proposal = PROPOSAL_TEMPLATE.format(
 
@@ -45,8 +102,18 @@ def generate_proposal(
 
         location=location,
 
-        services=service_text
+        services=service_text,
 
     )
+
+    proposal += "\n\n"
+
+    proposal += "----------------------------------------\n"
+
+    proposal += "AI BUSINESS ANALYSIS\n"
+
+    proposal += "----------------------------------------\n\n"
+
+    proposal += ai_summary
 
     return proposal

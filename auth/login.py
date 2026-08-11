@@ -19,7 +19,8 @@ def login_user(email, password):
             email,
             password,
             plan,
-            role
+            role,
+            subscription_status
         FROM users
         WHERE email=?
         """,
@@ -31,31 +32,55 @@ def login_user(email, password):
     if not user:
 
         conn.close()
-        return False, "Invalid email or password."
 
-    if not verify_password(password, user[3]):
+        return False, (
+            "Invalid email or password."
+        )
+
+    if not verify_password(
+        password,
+        user[3]
+    ):
 
         conn.close()
-        return False, "Invalid email or password."
 
-    last_login = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return False, (
+            "Invalid email or password."
+        )
+
+    last_login = datetime.now().strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
 
     cursor.execute(
         """
         UPDATE users
+
         SET last_login=?
+
         WHERE id=?
         """,
-        (last_login, user[0])
+        (
+            last_login,
+            user[0]
+        )
     )
 
     conn.commit()
     conn.close()
 
     return True, {
+
         "id": user[0],
+
         "name": user[1],
+
         "email": user[2],
+
         "plan": user[4],
-        "role": user[5]
+
+        "role": user[5],
+
+        "status": user[6],
+
     }

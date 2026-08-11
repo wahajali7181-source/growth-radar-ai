@@ -9,13 +9,13 @@ from app_pages.register import show as register_page
 from ui.sidebar import show_sidebar
 
 from app_pages.dashboard import show as dashboard_page
-from app_pages.lead_finder import show as lead_finder_page
+from app_pages.lead_finder_old import show as lead_finder_page
 from app_pages.crm import show as crm_page
 from app_pages.website_intelligence import show as website_page
 from app_pages.social_intelligence import show as social_page
 from app_pages.trend_intelligence import show as trend_page
 from app_pages.ai_employees import show as ai_page
-from app_pages.reports import show as reports_page
+from app_pages.reports_dashboard import show as reports_page
 from app_pages.settings import show as settings_page
 from app_pages.account import show as account_page
 from app_pages.upgrade import show as upgrade_page

@@ -6,10 +6,11 @@ from ai_employees.proposal_writer import show as proposal_writer
 from ai_employees.seo_expert import show as seo_expert
 from ai_employees.business_consultant import show as business_consultant
 from auth.session import require_auth
+from ai_employees.voice_test import show as voice_agent
 def show():
     require_auth()
 
-    st.title("🌐 Website Intelligence")
+    
     st.title("🤖 AI Employees")
 
     st.markdown("### Your Complete AI Team")
@@ -35,6 +36,10 @@ def show():
             "📱 AI Social Media Manager",
 
             "📧 AI Cold Outreach",
+
+            "📞 AI Cold Call Agent",
+
+            "🎙 AI Voice Agent",
 
             "✍ AI Copywriter",
 
@@ -83,10 +88,19 @@ def show():
         from ai_employees.cold_outreach import show
         show()
 
+    elif employee == "📞 AI Cold Call Agent":
+
+        from ai_employees.cold_call_agent import show
+        show()    
+
     elif employee == "✍ AI Copywriter":
 
         from ai_employees.copywriter import show
         show()
+
+    elif employee == "🎙 AI Voice Agent":
+
+        voice_agent()    
 
     elif employee == "📊 AI Project Manager":
 

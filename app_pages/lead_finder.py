@@ -1,36 +1,26 @@
 import streamlit as st
+import pandas as pd
 
-from auth.session import (
-    require_auth,
-    current_user
-)
+from auth.session import require_auth, current_user
 
 from subscriptions.engine import (
-    has_access,
     get_remaining,
-    needs_upgrade
+    needs_upgrade,
 )
 
-from subscriptions.usage import (
-    increase_usage
-)
+from subscriptions.usage import increase_usage
 
-from lead_engine.collector import collect_businesses
-from lead_engine.database import save_businesses
+from lead_engine_v2.collector import collect_businesses
 
-from lead_score.engine import (
-    calculate_lead_score,
-    opportunity_level
-)
-
-from crm.ui import crm_card
+from app_pages.components.metrics import show_metrics
+from app_pages.components.filters import show_filters
+from app_pages.components.tables import show_table
+from app_pages.components.export import export_csv
+from app_pages.components.actions import show_actions
+from app_pages.components.business_card import show_business_card
 
 
 def show():
-
-    # ===================================
-    # AUTH
-    # ===================================
 
     require_auth()
 
@@ -38,21 +28,13 @@ def show():
 
     email = user["email"]
 
-    # ===================================
-    # PAGE
-    # ===================================
-
-    st.title("🔍 Business Finder")
+    st.title("🔍 Lead Finder PRO")
 
     st.caption(
-        "Find high quality business leads using AI."
+        "Find, score and manage high quality business leads."
     )
 
     st.divider()
-
-    # ===================================
-    # SUBSCRIPTION
-    # ===================================
 
     remaining = get_remaining(
 
@@ -62,277 +44,181 @@ def show():
 
     )
 
-    col1, col2 = st.columns([3, 1])
+    c1, c2 = st.columns([4, 1])
 
-    with col1:
+    with c1:
 
         st.info(
+
             f"Remaining Searches : {remaining}"
+
         )
 
-    with col2:
+    with c2:
 
         st.button(
+
             "⭐ Upgrade",
-            use_container_width=True
+
+            use_container_width=True,
+
         )
 
     st.divider()
 
-    # ===================================
-    # SEARCH FORM
-    # ===================================
+    with st.form("finder"):
 
-    business_type = st.text_input(
+        left, right = st.columns(2)
 
-        "Business Type",
+        with left:
 
-        placeholder="Dentist, Gym, Restaurant",
+            business_type = st.text_input(
 
-        key="business_type"
+                "Business Type",
 
-    )
-
-    city = st.text_input(
-
-        "City",
-
-        placeholder="Lahore",
-
-        key="city"
-
-    )
-
-    # ===================================
-    # SEARCH BUTTON
-    # ===================================
-
-    if st.button(
-
-        "🚀 Find Businesses",
-
-        use_container_width=True,
-
-        key="find_businesses"
-
-    ):
-
-        # ===============================
-
-        if not business_type or not city:
-
-            st.warning(
-
-                "Please enter Business Type and City."
+                placeholder="Dentist"
 
             )
 
-            return
+        with right:
 
-        # ===============================
-        # SUBSCRIPTION LIMIT
-        # ===============================
+            city = st.text_input(
 
-        if needs_upgrade(
+                "City",
 
-            email,
-
-            "business_finder"
-
-        ):
-
-            st.error(
-
-                "⭐ Monthly limit reached."
+                placeholder="Lahore"
 
             )
 
-            st.warning(
+        search = st.form_submit_button(
 
-                "Upgrade your subscription."
-
-            )
-
-            st.button(
-
-                "🚀 Upgrade Plan",
-
-                use_container_width=True
-
-            )
-
-            return
-
-        # ===============================
-        # SEARCH
-        # ===============================
-
-        with st.spinner(
-
-            "Finding businesses..."
-
-        ):
-
-            df = collect_businesses(
-
-                business_type,
-
-                city
-
-            )
-
-        if df.empty:
-
-            st.warning(
-
-                "No businesses found."
-
-            )
-
-            return
-
-        # ==================================
-        # LEAD SCORE
-        # ==================================
-
-        scores = []
-
-        opportunities = []
-
-        for _, row in df.iterrows():
-
-            score = calculate_lead_score(row)
-
-            scores.append(score)
-
-            opportunities.append(
-
-                opportunity_level(score)
-
-            )
-
-        df["lead_score"] = scores
-
-        df["opportunity"] = opportunities
-                # ==================================
-        # REQUIRED COLUMNS
-        # ==================================
-
-        if "phone" not in df.columns:
-            df["phone"] = ""
-
-        if "address" not in df.columns:
-            df["address"] = ""
-
-        df["city"] = city
-        df["business_type"] = business_type
-
-        # ==================================
-        # SAVE DATABASE
-        # ==================================
-
-        try:
-
-            save_businesses(df)
-
-            # Subscription Usage +1
-            increase_usage(
-                email,
-                "business_finder"
-            )
-
-            st.success(
-                f"✅ Found {len(df)} businesses"
-            )
-
-            st.success(
-                "Businesses saved successfully."
-            )
-
-        except Exception as e:
-
-            st.error(
-                f"Database Error : {e}"
-            )
-
-        st.divider()
-
-        # ==================================
-        # RESULTS
-        # ==================================
-
-        st.subheader("📊 Search Results")
-
-        st.dataframe(
-
-            df,
+            "🚀 Find Businesses",
 
             use_container_width=True,
 
-            hide_index=True
+        )
+
+    if not search:
+
+        return
+
+    if business_type.strip() == "" or city.strip() == "":
+
+        st.warning(
+
+            "Business Type and City required."
 
         )
 
-        st.divider()
+        return
 
-        # ==================================
-        # AI CONSULTANT
-        # ==================================
+    if needs_upgrade(
 
-        st.subheader("🤖 AI Business Consultant")
+        email,
 
-        selected_business = st.selectbox(
+        "business_finder"
 
-            "Select Business",
+    ):
 
-            df["name"],
+        st.error(
 
-            key="ai_business"
+            "Monthly search limit reached."
 
         )
 
-        business = df[
-            df["name"] == selected_business
-        ].iloc[0]
+        return
 
-        st.session_state["selected_business"] = (
-            business.to_dict()
+    with st.spinner(
+
+        "Finding businesses..."
+
+    ):
+
+        df = collect_businesses(
+
+            business_type,
+
+            city,
+
         )
+    if df.empty:
 
-        if st.button(
+        st.warning(
 
-            "Open AI Consultant",
-
-            use_container_width=True
-
-        ):
-
-            st.success(
-
-                "Business loaded successfully."
-
-            )
-
-        st.divider()
-
-        # ==================================
-        # CRM
-        # ==================================
-
-        st.subheader("📋 CRM")
-
-        selected_business = st.selectbox(
-
-            "CRM Business",
-
-            df["name"],
-
-            key="crm_business"
+            "No businesses found."
 
         )
 
-        business = df[
-            df["name"] == selected_business
-        ].iloc[0]
+        return
 
-        crm_card(business)
+    increase_usage(
+
+        email,
+
+        "business_finder"
+
+    )
+
+    st.success(
+
+        f"{len(df)} businesses found."
+
+    )
+
+    st.divider()
+
+    # ===========================
+    # Dashboard Metrics
+    # ===========================
+
+    show_metrics(df)
+
+    st.divider()
+
+    # ===========================
+    # Filters
+    # ===========================
+
+    filtered = show_filters(df)
+
+    st.divider()
+
+    # ===========================
+    # Export
+    # ===========================
+
+    export_csv(filtered)
+
+    st.divider()
+
+    # ===========================
+    # Results Table
+    # ===========================
+
+    st.subheader("📊 Search Results")
+
+    show_table(filtered)
+
+    st.divider()
+
+    # ===========================
+    # Business Cards
+    # ===========================
+
+    st.subheader("🏢 Business Details")
+
+    for _, business in filtered.iterrows():
+
+        show_business_card(
+
+            business
+
+        )
+
+    st.divider()
+
+    # ===========================
+    # Bulk Actions
+    # ===========================
+
+    show_actions(filtered)          

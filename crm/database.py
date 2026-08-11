@@ -1,12 +1,22 @@
 import sqlite3
 import pandas as pd
 
+
 DB_NAME = "growthradar.db"
 
 
+# ==========================================
+# CONNECTION
+# ==========================================
+
 def get_connection():
+
     return sqlite3.connect(DB_NAME)
 
+
+# ==========================================
+# CREATE / UPGRADE CRM TABLE
+# ==========================================
 
 def create_crm_table():
 
@@ -14,68 +24,135 @@ def create_crm_table():
     cursor = conn.cursor()
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS crm(
+        CREATE TABLE IF NOT EXISTS crm(
 
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        business_id INTEGER,
+            business_id INTEGER,
 
-        business_name TEXT DEFAULT '',
+            user_email TEXT DEFAULT '',
 
-        industry TEXT DEFAULT '',
+            business_name TEXT DEFAULT '',
 
-        status TEXT DEFAULT 'New',
+            industry TEXT DEFAULT '',
 
-        priority TEXT DEFAULT 'Medium',
+            website TEXT DEFAULT '',
 
-        assigned_to TEXT DEFAULT '',
+            location TEXT DEFAULT '',
 
-        starred INTEGER DEFAULT 0,
+            email TEXT DEFAULT '',
 
-        proposal_sent INTEGER DEFAULT 0,
+            phone TEXT DEFAULT '',
 
-        followup_date TEXT DEFAULT '',
+            lead_score INTEGER DEFAULT 0,
 
-        meeting_date TEXT DEFAULT '',
+            status TEXT DEFAULT 'New',
 
-        notes TEXT DEFAULT '',
+            priority TEXT DEFAULT 'Medium',
 
-        estimated_value INTEGER DEFAULT 0,
+            assigned_to TEXT DEFAULT '',
 
-        revenue INTEGER DEFAULT 0,
+            starred INTEGER DEFAULT 0,
 
-        deal_stage TEXT DEFAULT 'Open',
+            proposal_sent INTEGER DEFAULT 0,
 
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
+            followup_date TEXT DEFAULT '',
+
+            meeting_date TEXT DEFAULT '',
+
+            notes TEXT DEFAULT '',
+
+            estimated_value INTEGER DEFAULT 0,
+
+            revenue INTEGER DEFAULT 0,
+
+            deal_stage TEXT DEFAULT 'Open',
+
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+        )
     """)
 
-    conn.commit()
+    # ==========================================
+    # CHECK EXISTING COLUMNS
+    # ==========================================
 
-    # ==========================
-    # Auto Upgrade Existing CRM
-    # ==========================
+    cursor.execute(
+        "PRAGMA table_info(crm)"
+    )
 
-    cursor.execute("PRAGMA table_info(crm)")
-    columns = [row[1] for row in cursor.fetchall()]
+    columns = [
+
+        row[1]
+        for row in cursor.fetchall()
+
+    ]
+
+    # ==========================================
+    # DATABASE UPGRADES
+    # ==========================================
 
     upgrades = {
 
-        "business_name": "TEXT DEFAULT ''",
+        "user_email":
+            "TEXT DEFAULT ''",
 
-        "industry": "TEXT DEFAULT ''",
+        "business_name":
+            "TEXT DEFAULT ''",
 
-        "priority": "TEXT DEFAULT 'Medium'",
+        "industry":
+            "TEXT DEFAULT ''",
 
-        "assigned_to": "TEXT DEFAULT ''",
+        "website":
+            "TEXT DEFAULT ''",
 
-        "meeting_date": "TEXT DEFAULT ''",
+        "location":
+            "TEXT DEFAULT ''",
 
-        "revenue": "INTEGER DEFAULT 0",
+        "email":
+            "TEXT DEFAULT ''",
 
-        "deal_stage": "TEXT DEFAULT 'Open'",
+        "phone":
+            "TEXT DEFAULT ''",
 
-        "created_at": "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+        "lead_score":
+            "INTEGER DEFAULT 0",
+
+        "status":
+            "TEXT DEFAULT 'New'",
+
+        "priority":
+            "TEXT DEFAULT 'Medium'",
+
+        "assigned_to":
+            "TEXT DEFAULT ''",
+
+        "starred":
+            "INTEGER DEFAULT 0",
+
+        "proposal_sent":
+            "INTEGER DEFAULT 0",
+
+        "followup_date":
+            "TEXT DEFAULT ''",
+
+        "meeting_date":
+            "TEXT DEFAULT ''",
+
+        "notes":
+            "TEXT DEFAULT ''",
+
+        "estimated_value":
+            "INTEGER DEFAULT 0",
+
+        "revenue":
+            "INTEGER DEFAULT 0",
+
+        "deal_stage":
+            "TEXT DEFAULT 'Open'",
+
+        "created_at":
+            "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
 
     }
 
@@ -84,53 +161,45 @@ def create_crm_table():
         if column not in columns:
 
             cursor.execute(
-                f"ALTER TABLE crm ADD COLUMN {column} {definition}"
+
+                f"""
+                ALTER TABLE crm
+                ADD COLUMN {column} {definition}
+                """
+
             )
 
     conn.commit()
     conn.close()
 
 
-# ======================================
-# LOAD CRM
-# ======================================
+# ==========================================
+# LOAD CRM DATA
+# ==========================================
 
-def load_crm_data():
+def load_crm_data(user_email=None):
 
-    conn = get_connection()
+    if not user_email:
 
-    try:
-
-        df = pd.read_sql(
-            "SELECT * FROM crm",
-            conn
-        )
-
-    except Exception:
-
-        df = pd.DataFrame()
-
-    finally:
-
-        conn.close()
-
-    return df
-
-
-# ======================================
-# GET SINGLE BUSINESS CRM
-# ======================================
-
-def get_crm_by_business(business_id):
+        return pd.DataFrame()
 
     conn = get_connection()
 
     try:
 
         df = pd.read_sql(
-            "SELECT * FROM crm WHERE business_id=?",
+
+            """
+            SELECT *
+            FROM crm
+            WHERE user_email=?
+            ORDER BY id DESC
+            """,
+
             conn,
-            params=(business_id,)
+
+            params=(user_email,)
+
         )
 
     except Exception:
@@ -144,41 +213,117 @@ def get_crm_by_business(business_id):
     return df
 
 
-# ======================================
-# TOTAL CRM RECORDS
-# ======================================
+# ==========================================
+# GET CRM BY BUSINESS
+# ==========================================
 
-def total_crm():
+def get_crm_by_business(
+
+    business_id,
+    user_email
+
+):
+
+    if not user_email:
+
+        return pd.DataFrame()
 
     conn = get_connection()
 
+    try:
+
+        df = pd.read_sql(
+
+            """
+            SELECT *
+            FROM crm
+            WHERE business_id=?
+            AND user_email=?
+            """,
+
+            conn,
+
+            params=(
+
+                business_id,
+                user_email
+
+            )
+
+        )
+
+    except Exception:
+
+        df = pd.DataFrame()
+
+    finally:
+
+        conn.close()
+
+    return df
+
+
+# ==========================================
+# TOTAL CRM RECORDS
+# ==========================================
+
+def total_crm(user_email=None):
+
+    if not user_email:
+
+        return 0
+
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT COUNT(*) FROM crm"
+
+        """
+        SELECT COUNT(*)
+        FROM crm
+        WHERE user_email=?
+        """,
+
+        (user_email,)
+
     )
 
-    total = cursor.fetchone()[0]
+    result = cursor.fetchone()
+
+    total = result[0] if result else 0
 
     conn.close()
 
     return total
 
 
-# ======================================
-# CLEAR CRM
-# ======================================
+# ==========================================
+# CLEAR USER CRM
+# ==========================================
 
-def clear_crm():
+def clear_crm(user_email=None):
+
+    if not user_email:
+
+        return False
 
     conn = get_connection()
-
     cursor = conn.cursor()
 
     cursor.execute(
-        "DELETE FROM crm"
+
+        """
+        DELETE FROM crm
+        WHERE user_email=?
+        """,
+
+        (user_email,)
+
     )
 
-    conn.commit()
+    deleted = cursor.rowcount
 
+    conn.commit()
     conn.close()
+
+    return deleted > 0
