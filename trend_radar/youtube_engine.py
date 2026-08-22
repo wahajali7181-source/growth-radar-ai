@@ -1,29 +1,258 @@
-from youtubesearchpython import VideosSearch
+import os
+import requests
+
+from dotenv import load_dotenv
 
 
-def get_top_videos(keyword, limit=10):
+# ==========================================================
+# CONFIG
+# ==========================================================
 
-    search = VideosSearch(keyword, limit=limit)
+load_dotenv(override=True)
 
-    results = search.result()["result"]
+YOUTUBE_API_URL = (
+    "https://www.googleapis.com/youtube/v3"
+)
+
+REQUEST_TIMEOUT = 20
+
+
+# ==========================================================
+# API KEY
+# ==========================================================
+
+def get_api_key():
+
+    key = os.getenv(
+        "YOUTUBE_API_KEY"
+    )
+
+    if not key:
+
+        raise RuntimeError(
+            "YOUTUBE_API_KEY is not configured."
+        )
+
+    return key
+
+
+# ==========================================================
+# SEARCH VIDEOS
+# ==========================================================
+
+def get_top_videos(
+    keyword,
+    limit=10
+):
+
+    if not keyword or not keyword.strip():
+
+        return []
+
+    limit = max(
+        1,
+        min(
+            int(limit),
+            50
+        )
+    )
+
+    params = {
+
+        "part": "snippet",
+
+        "q": keyword.strip(),
+
+        "type": "video",
+
+        "maxResults": limit,
+
+        "order": "relevance",
+
+        "key": get_api_key()
+
+    }
+
+    response = requests.get(
+
+        f"{YOUTUBE_API_URL}/search",
+
+        params=params,
+
+        timeout=REQUEST_TIMEOUT
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    items = data.get(
+        "items",
+        []
+    )
+
+    video_ids = [
+
+        item.get(
+            "id",
+            {}
+        ).get(
+            "videoId"
+        )
+
+        for item in items
+
+        if item.get(
+            "id",
+            {}
+        ).get(
+            "videoId"
+        )
+    ]
+
+    if not video_ids:
+
+        return []
+
+    # ======================================================
+    # VIDEO STATISTICS
+    # ======================================================
+
+    stats_params = {
+
+        "part": "snippet,statistics,contentDetails",
+
+        "id": ",".join(
+            video_ids
+        ),
+
+        "key": get_api_key()
+
+    }
+
+    stats_response = requests.get(
+
+        f"{YOUTUBE_API_URL}/videos",
+
+        params=stats_params,
+
+        timeout=REQUEST_TIMEOUT
+    )
+
+    stats_response.raise_for_status()
+
+    stats_data = stats_response.json()
+
+    stats_map = {
+
+        item.get("id"): item
+
+        for item in stats_data.get(
+            "items",
+            []
+        )
+    }
+
+    # ======================================================
+    # BUILD RESULT
+    # ======================================================
 
     videos = []
 
-    for video in results:
+    for item in items:
+
+        video_id = item.get(
+            "id",
+            {}
+        ).get(
+            "videoId"
+        )
+
+        if not video_id:
+            continue
+
+        snippet = item.get(
+            "snippet",
+            {}
+        )
+
+        details = stats_map.get(
+            video_id,
+            {}
+        )
+
+        statistics = details.get(
+            "statistics",
+            {}
+        )
+
+        content_details = details.get(
+            "contentDetails",
+            {}
+        )
 
         videos.append({
 
-            "title": video.get("title"),
+            "title": snippet.get(
+                "title"
+            ),
 
-            "channel": video.get("channel", {}).get("name"),
+            "channel": snippet.get(
+                "channelTitle"
+            ),
 
-            "views": video.get("viewCount", {}).get("text"),
+            "channel_id": snippet.get(
+                "channelId"
+            ),
 
-            "published": video.get("publishedTime"),
+            "video_id": video_id,
 
-            "duration": video.get("duration"),
+            "views": int(
+                statistics.get(
+                    "viewCount",
+                    0
+                )
+            ),
 
-            "link": video.get("link")
+            "likes": int(
+                statistics.get(
+                    "likeCount",
+                    0
+                )
+            ),
+
+            "comments": int(
+                statistics.get(
+                    "commentCount",
+                    0
+                )
+            ),
+
+            "published": snippet.get(
+                "publishedAt"
+            ),
+
+            "duration": content_details.get(
+                "duration"
+            ),
+
+            "thumbnail": (
+                snippet.get(
+                    "thumbnails",
+                    {}
+                )
+                .get(
+                    "high",
+                    {}
+                )
+                .get(
+                    "url"
+                )
+            ),
+
+            "link": (
+                f"https://www.youtube.com/watch?v={video_id}"
+            )
 
         })
 

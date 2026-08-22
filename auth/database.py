@@ -91,3 +91,38 @@ def make_admin(email):
     conn.commit()
 
     conn.close()
+# ==========================================================
+# PASSWORD RESET TOKENS TABLE
+# ==========================================================
+
+def create_password_reset_table():
+
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS password_reset_tokens(
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            user_id INTEGER NOT NULL,
+
+            token_hash TEXT NOT NULL,
+
+            expires_at TEXT NOT NULL,
+
+            used INTEGER DEFAULT 0,
+
+            created_at TEXT NOT NULL,
+
+            FOREIGN KEY(user_id)
+                REFERENCES users(id)
+        )
+        """
+    )
+
+    conn.commit()
+
+    conn.close()    

@@ -20,9 +20,26 @@ from app_pages.settings import show as settings_page
 from app_pages.account import show as account_page
 from app_pages.upgrade import show as upgrade_page
 from app_pages.admin import show as admin_page
+from app_pages.reset_password import show as reset_password_page
 
 def run():
 
+    # ==========================================================
+    # PASSWORD RESET
+    # ==========================================================
+
+    token = st.query_params.get(
+        "token",
+        ""
+    )
+
+    if token:
+
+        reset_password_page()
+
+        return
+
+   
     # ==========================
     # LOGIN FIRST
     # ==========================
