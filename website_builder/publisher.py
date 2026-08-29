@@ -2009,12 +2009,16 @@ def update_netlify_site(
                     "id"
                 ),
 
-            "live_url":
+                        "live_url":
                 live_url,
+
+            "admin_url":
+                existing.get(
+                    "admin_url"
+                ),
 
             "folder":
                 folder,
-
             "message":
                 "Live website updated successfully."
 

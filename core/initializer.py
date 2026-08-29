@@ -10,8 +10,7 @@ from auth.database import (
 from subscriptions.database import create_subscription_table
 from payments.database import create_payments_table
 from ai.database import create_ai_tables
-
-
+from website_builder.database import create_websites_table
 # ==========================================================
 # INITIALIZE APPLICATION
 # ==========================================================
@@ -59,7 +58,11 @@ def initialize():
     # ------------------------------------------------------
 
     create_ai_tables()
-
+        # ------------------------------------------------------
+    # WEBSITE REGISTRY
+    # ------------------------------------------------------
+    
+    create_websites_table()
     # ------------------------------------------------------
     # UI THEME
     # ------------------------------------------------------

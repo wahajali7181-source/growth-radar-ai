@@ -7,5 +7,15 @@
         "site_name": "mishal-dental-clinic",
         "updated_at": 1787056368.3592558,
         "last_deploy_id": "6a8450ee2eb14f9021cae9b1"
+    },
+    "d:\\projects\\growthradarai\\generated_sites\\growth test clinic": {
+        "site_id": "d6d6d8f2-4beb-4fe5-8cdf-5c96b2a6de90",
+        "business_name": "Growth Test Clinic",
+        "folder": "D:\\projects\\GrowthRadarAI\\generated_sites\\Growth Test Clinic",
+        "live_url": "https://growth-test-clinic.netlify.app",
+        "site_name": "growth-test-clinic",
+        "admin_url": "https://app.netlify.com/projects/growth-test-clinic",
+        "last_deploy_id": "6a901f8e98955f685b8ad733",
+        "updated_at": 1787830157.2297208
     }
 }

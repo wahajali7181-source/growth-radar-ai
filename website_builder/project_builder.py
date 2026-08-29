@@ -1,3 +1,4 @@
+import json
 import os
 import re
 
@@ -7,7 +8,9 @@ def _safe_project_name(business_name):
     Create a filesystem-safe project folder name.
     """
 
-    name = str(business_name).strip()
+    name = str(
+        business_name
+    ).strip()
 
     name = re.sub(
         r'[<>:"/\\|?*]',
@@ -24,10 +27,35 @@ def _safe_project_name(business_name):
     return name or "Generated Website"
 
 
+def _safe_html_title(business_name):
+    """
+    Create safe text for the HTML title.
+    """
+
+    name = str(
+        business_name
+    ).strip()
+
+    if not name:
+        return "Generated Website"
+
+    return (
+        name
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&#39;")
+    )
+
+
 def create_project(
     business_name,
     app_code
 ):
+    """
+    Create a complete standalone Vite + React website.
+    """
 
     project_name = _safe_project_name(
         business_name
@@ -73,7 +101,7 @@ def create_project(
 
     main_code = """import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import App from "./App.jsx";
 import "./App.css";
 
 ReactDOM.createRoot(
@@ -104,10 +132,7 @@ ReactDOM.createRoot(
     # APP.CSS
     # ==========================================================
 
-    css_code = """@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+    css_code = """
 :root {
     font-family:
         Inter,
@@ -120,8 +145,12 @@ ReactDOM.createRoot(
 
     color: #172033;
     background: #ffffff;
+
     font-synthesis: none;
     text-rendering: optimizeLegibility;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -134,13 +163,18 @@ html {
 
 body {
     margin: 0;
+
     min-width: 320px;
+
     background: #ffffff;
 }
 
 body,
 button,
-a {
+a,
+input,
+textarea,
+select {
     font-family: inherit;
 }
 
@@ -156,7 +190,9 @@ button {
 
 .website {
     min-height: 100vh;
+
     background: var(--secondary);
+
     color: #172033;
 }
 
@@ -165,7 +201,11 @@ button {
    ========================================================== */
 
 .container {
-    width: min(1120px, calc(100% - 40px));
+    width: min(
+        1120px,
+        calc(100% - 40px)
+    );
+
     margin: 0 auto;
 }
 
@@ -175,20 +215,33 @@ button {
 
 .navbar {
     position: sticky;
+
     top: 0;
+
     z-index: 100;
 
-    background: rgba(255, 255, 255, 0.92);
-    border-bottom: 1px solid #e9edf3;
+    background:
+        rgba(
+            255,
+            255,
+            255,
+            0.92
+        );
 
-    backdrop-filter: blur(14px);
+    border-bottom:
+        1px solid #e9edf3;
+
+    backdrop-filter:
+        blur(14px);
 }
 
 .nav-inner {
     min-height: 76px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 24px;
@@ -198,13 +251,17 @@ button {
     color: var(--primary);
 
     font-size: 20px;
+
     font-weight: 800;
+
     letter-spacing: -0.03em;
 }
 
 .nav-links {
     display: flex;
+
     align-items: center;
+
     gap: 28px;
 }
 
@@ -212,6 +269,7 @@ button {
     color: #5c6678;
 
     font-size: 14px;
+
     font-weight: 600;
 
     transition:
@@ -224,22 +282,33 @@ button {
 
 .nav-button {
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     min-height: 42px;
+
     padding: 0 18px;
 
     color: #ffffff;
+
     background: var(--primary);
 
     border-radius: 10px;
 
     font-size: 14px;
+
     font-weight: 700;
 
     box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.08);
+        0 8px 20px
+        rgba(
+            0,
+            0,
+            0,
+            0.08
+        );
 
     transition:
         transform 0.2s ease,
@@ -247,10 +316,17 @@ button {
 }
 
 .nav-button:hover {
-    transform: translateY(-2px);
+    transform:
+        translateY(-2px);
 
     box-shadow:
-        0 12px 26px rgba(0, 0, 0, 0.12);
+        0 12px 26px
+        rgba(
+            0,
+            0,
+            0,
+            0.12
+        );
 }
 
 /* ==========================================================
@@ -259,11 +335,13 @@ button {
 
 .hero {
     position: relative;
+
     overflow: hidden;
 
     min-height: 620px;
 
     display: flex;
+
     align-items: center;
 
     background:
@@ -287,6 +365,7 @@ button {
     content: "";
 
     position: absolute;
+
     width: 420px;
     height: 420px;
 
@@ -302,6 +381,7 @@ button {
 
 .hero-content {
     position: relative;
+
     z-index: 1;
 
     padding: 100px 0;
@@ -319,8 +399,11 @@ button {
     color: var(--primary);
 
     font-size: 12px;
+
     font-weight: 800;
+
     letter-spacing: 0.14em;
+
     text-transform: uppercase;
 }
 
@@ -338,6 +421,7 @@ button {
     );
 
     line-height: 0.98;
+
     letter-spacing: -0.055em;
 }
 
@@ -349,27 +433,39 @@ button {
     color: #667085;
 
     font-size: 19px;
+
     line-height: 1.75;
 }
 
 .primary-button {
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
 
     min-height: 52px;
+
     padding: 0 24px;
 
     color: #ffffff;
+
     background: var(--primary);
 
     border-radius: 12px;
 
     font-size: 15px;
+
     font-weight: 800;
 
     box-shadow:
-        0 12px 30px rgba(0, 0, 0, 0.12);
+        0 12px 30px
+        rgba(
+            0,
+            0,
+            0,
+            0.12
+        );
 
     transition:
         transform 0.2s ease,
@@ -377,10 +473,17 @@ button {
 }
 
 .primary-button:hover {
-    transform: translateY(-3px);
+    transform:
+        translateY(-3px);
 
     box-shadow:
-        0 18px 34px rgba(0, 0, 0, 0.16);
+        0 18px 34px
+        rgba(
+            0,
+            0,
+            0,
+            0.16
+        );
 }
 
 /* ==========================================================
@@ -401,6 +504,7 @@ button {
     color: var(--primary);
 
     font-size: 12px;
+
     font-weight: 800;
 
     letter-spacing: 0.14em;
@@ -418,6 +522,7 @@ button {
     );
 
     line-height: 1.05;
+
     letter-spacing: -0.045em;
 }
 
@@ -432,7 +537,9 @@ button {
 
     background: #f8fafc;
 
-    border: 1px solid #e7ebf0;
+    border:
+        1px solid #e7ebf0;
+
     border-radius: 20px;
 }
 
@@ -442,6 +549,7 @@ button {
     color: #667085;
 
     font-size: 18px;
+
     line-height: 1.85;
 }
 
@@ -457,7 +565,13 @@ button {
     display: grid;
 
     grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+        repeat(
+            3,
+            minmax(
+                0,
+                1fr
+            )
+        );
 
     gap: 22px;
 }
@@ -469,7 +583,9 @@ button {
 
     background: #ffffff;
 
-    border: 1px solid #e7ebf0;
+    border:
+        1px solid #e7ebf0;
+
     border-radius: 18px;
 
     transition:
@@ -479,12 +595,20 @@ button {
 }
 
 .service-card:hover {
-    transform: translateY(-6px);
+    transform:
+        translateY(-6px);
 
-    border-color: var(--primary);
+    border-color:
+        var(--primary);
 
     box-shadow:
-        0 20px 50px rgba(16, 24, 40, 0.09);
+        0 20px 50px
+        rgba(
+            16,
+            24,
+            40,
+            0.09
+        );
 }
 
 .service-icon {
@@ -492,12 +616,15 @@ button {
     height: 42px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     margin-bottom: 24px;
 
     color: #ffffff;
+
     background: var(--primary);
 
     border-radius: 12px;
@@ -529,7 +656,13 @@ button {
     display: grid;
 
     grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+        repeat(
+            3,
+            minmax(
+                0,
+                1fr
+            )
+        );
 
     gap: 22px;
 }
@@ -539,7 +672,9 @@ button {
 
     background: #ffffff;
 
-    border: 1px solid #e7ebf0;
+    border:
+        1px solid #e7ebf0;
+
     border-radius: 18px;
 }
 
@@ -570,11 +705,13 @@ button {
 .faq-item {
     padding: 28px 0;
 
-    border-bottom: 1px solid #dfe4ea;
+    border-bottom:
+        1px solid #dfe4ea;
 }
 
 .faq-item:first-child {
-    border-top: 1px solid #dfe4ea;
+    border-top:
+        1px solid #dfe4ea;
 }
 
 .faq-item h3 {
@@ -603,7 +740,9 @@ button {
 
 .contact-card {
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 40px;
@@ -611,16 +750,29 @@ button {
     padding: 54px;
 
     color: #ffffff;
+
     background: var(--primary);
 
     border-radius: 24px;
 
     box-shadow:
-        0 24px 60px rgba(0, 0, 0, 0.14);
+        0 24px 60px
+        rgba(
+            0,
+            0,
+            0,
+            0.14
+        );
 }
 
 .contact-card .eyebrow {
-    color: rgba(255, 255, 255, 0.75);
+    color:
+        rgba(
+            255,
+            255,
+            255,
+            0.75
+        );
 }
 
 .contact-card h2 {
@@ -633,6 +785,7 @@ button {
     );
 
     line-height: 1;
+
     letter-spacing: -0.04em;
 }
 
@@ -641,7 +794,13 @@ button {
 
     margin: 0;
 
-    color: rgba(255, 255, 255, 0.82);
+    color:
+        rgba(
+            255,
+            255,
+            255,
+            0.82
+        );
 
     line-height: 1.7;
 }
@@ -650,6 +809,7 @@ button {
     flex-shrink: 0;
 
     color: var(--primary);
+
     background: #ffffff;
 }
 
@@ -667,7 +827,9 @@ footer {
 
 .footer-inner {
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     gap: 30px;
@@ -702,14 +864,20 @@ footer {
     .services-grid,
     .testimonials-grid {
         grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+            repeat(
+                2,
+                minmax(
+                    0,
+                    1fr
+                )
+            );
     }
 
     .contact-card {
         flex-direction: column;
+
         align-items: flex-start;
     }
-
 }
 
 @media (max-width: 640px) {
@@ -756,14 +924,15 @@ footer {
 
     .contact-card {
         padding: 32px 25px;
+
         border-radius: 18px;
     }
 
     .footer-inner {
         flex-direction: column;
+
         align-items: flex-start;
     }
-
 }
 """
 
@@ -786,19 +955,36 @@ footer {
     # INDEX.HTML
     # ==========================================================
 
-    index_code = """<!doctype html>
+    html_title = _safe_html_title(
+        business_name
+    )
+
+    index_code = f"""<!doctype html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8" />
+
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     />
+
     <meta
         name="description"
-        content="Generated business website"
+        content="{html_title} - Professional business website"
     />
-    <title>Generated Website</title>
+
+    <meta
+        name="theme-color"
+        content="#ffffff"
+    />
+
+    <title>
+        {html_title}
+    </title>
+
 </head>
 
 <body>
@@ -811,6 +997,7 @@ footer {
     ></script>
 
 </body>
+
 </html>
 """
 
@@ -833,26 +1020,24 @@ footer {
     # PACKAGE.JSON
     # ==========================================================
 
-    package_json = """{
-  "name": "generated-business-website",
-  "private": true,
-  "version": "1.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "tailwindcss": "latest"
-  },
-  "devDependencies": {}
-}
-"""
+    package_data = {
+        "name": "generated-business-website",
+        "private": True,
+        "version": "1.0.0",
+        "type": "module",
+        "scripts": {
+            "dev": "vite",
+            "build": "vite build",
+            "preview": "vite preview"
+        },
+        "dependencies": {
+            "@vitejs/plugin-react": "^4.3.4",
+            "vite": "^6.1.0",
+            "react": "^19.0.0",
+            "react-dom": "^19.0.0"
+        },
+        "devDependencies": {}
+    }
 
     package_path = os.path.join(
         folder,
@@ -865,8 +1050,10 @@ footer {
         encoding="utf-8"
     ) as f:
 
-        f.write(
-            package_json
+        json.dump(
+            package_data,
+            f,
+            indent=2
         )
 
     # ==========================================================
@@ -877,7 +1064,7 @@ footer {
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-    plugins: [react()]
+    plugins: [react()],
 });
 """
 
@@ -897,34 +1084,41 @@ export default defineConfig({
         )
 
     # ==========================================================
-    # TAILWIND CONFIG
+    # GITIGNORE
     # ==========================================================
 
-    tailwind_config = """export default {
-    content: [
-        "./index.html",
-        "./src/**/*.{js,ts,jsx,tsx}"
-    ],
-    theme: {
-        extend: {}
-    },
-    plugins: []
-};
+    gitignore_code = """node_modules
+dist
+.env
+.env.local
 """
 
-    tailwind_path = os.path.join(
+    gitignore_path = os.path.join(
         folder,
-        "tailwind.config.js"
+        ".gitignore"
     )
 
     with open(
-        tailwind_path,
+        gitignore_path,
         "w",
         encoding="utf-8"
     ) as f:
 
         f.write(
-            tailwind_config
+            gitignore_code
         )
 
-    return folder
+        # ==========================================================
+    # README
+    # ==========================================================
+
+    readme_code = f"""# {business_name}
+
+This website was generated by Growth Radar AI.
+
+## Development
+
+Install dependencies:
+
+```bash
+npm install"""

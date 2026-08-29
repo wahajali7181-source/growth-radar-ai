@@ -75,7 +75,10 @@ def generate_complete_website(
 
     try:
 
-        react_code = build_react_template(data)
+        react_code = build_react_template(
+            data,
+            pages 
+        )
 
     except Exception as e:
 

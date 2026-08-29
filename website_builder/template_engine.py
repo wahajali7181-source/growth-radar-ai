@@ -1,11 +1,11 @@
-import json
 import re
 
 
 def _safe_text(value):
     """
-    Convert any value into safe text for React JSX.
+    Convert any value into safe HTML text.
     """
+
     if value is None:
         return ""
 
@@ -25,16 +25,18 @@ def _safe_color(value, fallback):
     """
     Return a safe CSS color value.
     """
+
     if not value:
         return fallback
 
     value = str(value).strip()
 
-    # Allow hex colors.
-    if re.fullmatch(r"#[0-9a-fA-F]{3,8}", value):
+    if re.fullmatch(
+        r"#[0-9a-fA-F]{3,8}",
+        value
+    ):
         return value
 
-    # Allow a small set of normal CSS colors.
     allowed = {
         "white",
         "black",
@@ -56,22 +58,94 @@ def _safe_color(value, fallback):
     return fallback
 
 
-def build_react_template(data):
+def _normalize_pages(pages):
+    """
+    Convert the pages input into a normalized set.
+    """
 
-    if not isinstance(data, dict):
+    if isinstance(
+        pages,
+        str
+    ):
+        page_list = pages.split(",")
+
+    elif isinstance(
+        pages,
+        list
+    ):
+        page_list = pages
+
+    else:
+        page_list = []
+
+    normalized = set()
+
+    for page in page_list:
+
+        page_name = str(
+            page
+        ).strip().lower()
+
+        if page_name:
+            normalized.add(
+                page_name
+            )
+
+    return normalized
+
+
+def build_react_template(
+    data,
+    pages=None
+):
+
+    if not isinstance(
+        data,
+        dict
+    ):
         return None
 
+    selected_pages = _normalize_pages(
+        pages
+    )
+
+    # Backward compatibility:
+    # If pages are not supplied, generate the
+    # complete standard website.
+    if not selected_pages:
+
+        selected_pages = {
+            "home",
+            "about",
+            "services",
+            "testimonials",
+            "faq",
+            "contact",
+        }
+
     name = _safe_text(
-        data.get("name", "Business Website")
+        data.get(
+            "name",
+            "Business Website"
+        )
     )
 
     industry = _safe_text(
-        data.get("industry", "")
+        data.get(
+            "industry",
+            ""
+        )
     )
 
-    hero = data.get("hero", {})
+    hero = data.get(
+        "hero",
+        {}
+    )
 
-    if not isinstance(hero, dict):
+    if not isinstance(
+        hero,
+        dict
+    ):
         hero = {}
 
     hero_title = _safe_text(
@@ -84,7 +158,10 @@ def build_react_template(data):
     hero_description = _safe_text(
         hero.get(
             "description",
-            "Professional services designed around your needs."
+            (
+                "Professional services designed "
+                "around your needs."
+            )
         )
     )
 
@@ -98,7 +175,10 @@ def build_react_template(data):
     about = _safe_text(
         data.get(
             "about",
-            "Learn more about our business and services."
+            (
+                "Learn more about our business "
+                "and services."
+            )
         )
     )
 
@@ -107,7 +187,10 @@ def build_react_template(data):
         []
     )
 
-    if not isinstance(services, list):
+    if not isinstance(
+        services,
+        list
+    ):
         services = []
 
     testimonials = data.get(
@@ -115,7 +198,10 @@ def build_react_template(data):
         []
     )
 
-    if not isinstance(testimonials, list):
+    if not isinstance(
+        testimonials,
+        list
+    ):
         testimonials = []
 
     faq = data.get(
@@ -123,7 +209,10 @@ def build_react_template(data):
         []
     )
 
-    if not isinstance(faq, list):
+    if not isinstance(
+        faq,
+        list
+    ):
         faq = []
 
     colors = data.get(
@@ -131,42 +220,129 @@ def build_react_template(data):
         {}
     )
 
-    if not isinstance(colors, dict):
+    if not isinstance(
+        colors,
+        dict
+    ):
         colors = {}
 
     primary = _safe_color(
-        colors.get("primary"),
+        colors.get(
+            "primary"
+        ),
         "#2563EB"
     )
 
     secondary = _safe_color(
-        colors.get("secondary"),
+        colors.get(
+            "secondary"
+        ),
         "#FFFFFF"
     )
+
+    # ==========================================================
+    # NAVIGATION
+    # ==========================================================
+
+    nav_links = ""
+
+    page_labels = [
+        (
+            "home",
+            "Home",
+        ),
+        (
+            "about",
+            "About",
+        ),
+        (
+            "services",
+            "Services",
+        ),
+        (
+            "testimonials",
+            "Testimonials",
+        ),
+        (
+            "faq",
+            "FAQ",
+        ),
+        (
+            "contact",
+            "Contact",
+        ),
+    ]
+
+    for page_id, label in page_labels:
+
+        if page_id not in selected_pages:
+            continue
+
+        if (
+            page_id == "testimonials"
+            and not testimonials
+        ):
+            continue
+
+        nav_links += f"""
+                        <a href="#{page_id}">
+                            {label}
+                        </a>
+        """
+
+    # ==========================================================
+    # SERVICES
+    # ==========================================================
 
     service_cards = ""
 
     for service in services:
 
+        service_name = _safe_text(
+            service
+        )
+
+        if not service_name:
+            continue
+
         service_cards += f"""
-        <div className="service-card">
-            <div className="service-icon">✓</div>
-            <h3>{_safe_text(service)}</h3>
-            <p>
-                Professional service designed to meet your needs.
-            </p>
-        </div>
+                        <div className="service-card">
+
+                            <div className="service-icon">
+                                ✓
+                            </div>
+
+                            <h3>
+                                {service_name}
+                            </h3>
+
+                            <p>
+                                Professional service designed
+                                to meet your needs.
+                            </p>
+
+                        </div>
         """
+
+    # ==========================================================
+    # TESTIMONIALS
+    # ==========================================================
 
     testimonial_cards = ""
 
     for item in testimonials:
 
-        if not isinstance(item, dict):
+        if not isinstance(
+            item,
+            dict
+        ):
             continue
 
         person = _safe_text(
-            item.get("name", "Customer")
+            item.get(
+                "name",
+                "Customer"
+            )
         )
 
         review = _safe_text(
@@ -180,104 +356,88 @@ def build_react_template(data):
             continue
 
         testimonial_cards += f"""
-        <div className="testimonial-card">
-            <p>"{review}"</p>
-            <strong>{person}</strong>
-        </div>
+                        <div className="testimonial-card">
+
+                            <p>
+                                "{review}"
+                            </p>
+
+                            <strong>
+                                {person}
+                            </strong>
+
+                        </div>
         """
+
+    # ==========================================================
+    # FAQ
+    # ==========================================================
 
     faq_items = ""
 
     for item in faq:
 
-        if not isinstance(item, dict):
+        if not isinstance(
+            item,
+            dict
+        ):
             continue
 
         question = _safe_text(
-            item.get("question", "")
+            item.get(
+                "question",
+                ""
+            )
         )
 
         answer = _safe_text(
-            item.get("answer", "")
+            item.get(
+                "answer",
+                ""
+            )
         )
 
         if not question:
             continue
 
         faq_items += f"""
-        <div className="faq-item">
-            <h3>{question}</h3>
-            <p>{answer}</p>
-        </div>
+                        <div className="faq-item">
+
+                            <h3>
+                                {question}
+                            </h3>
+
+                            <p>
+                                {answer}
+                            </p>
+
+                        </div>
         """
 
-    project = f"""
-import './App.css'
+    # ==========================================================
+    # PAGE SECTIONS
+    # ==========================================================
 
-function App() {{
+    sections = ""
 
-    return (
+    # ----------------------------------------------------------
+    # HOME
+    # ----------------------------------------------------------
 
-        <div
-            className="website"
-            style={{{{
-                '--primary': '{primary}',
-                '--secondary': '{secondary}'
-            }}}}
-        >
+    if "home" in selected_pages:
 
-            <nav className="navbar">
-
-                <div className="container nav-inner">
-
-                    <div className="logo">
-                        {name}
-                    </div>
-
-                    <div className="nav-links">
-
-                        <a href="#home">
-                            Home
-                        </a>
-
-                        <a href="#about">
-                            About
-                        </a>
-
-                        <a href="#services">
-                            Services
-                        </a>
-
-                        <a href="#faq">
-                            FAQ
-                        </a>
-
-                        <a href="#contact">
-                            Contact
-                        </a>
-
-                    </div>
-
-                    <a
-                        href="#contact"
-                        className="nav-button"
-                    >
-                        {hero_button}
-                    </a>
-
-                </div>
-
-            </nav>
-
-
-            <main>
-
+        sections += f"""
                 <section
                     id="home"
                     className="hero"
                 >
 
-                    <div className="container hero-content">
+                    <div
+                        className="
+                            container
+                            hero-content
+                        "
+                    >
 
                         <div className="hero-text">
 
@@ -305,8 +465,15 @@ function App() {{
                     </div>
 
                 </section>
+        """
 
+    # ----------------------------------------------------------
+    # ABOUT
+    # ----------------------------------------------------------
 
+    if "about" in selected_pages:
+
+        sections += f"""
                 <section
                     id="about"
                     className="section"
@@ -337,11 +504,24 @@ function App() {{
                     </div>
 
                 </section>
+        """
 
+    # ----------------------------------------------------------
+    # SERVICES
+    # ----------------------------------------------------------
 
+    if (
+        "services" in selected_pages
+        and service_cards
+    ):
+
+        sections += f"""
                 <section
                     id="services"
-                    className="section services-section"
+                    className="
+                        section
+                        services-section
+                    "
                 >
 
                     <div className="container">
@@ -367,8 +547,18 @@ function App() {{
                     </div>
 
                 </section>
+        """
 
+    # ----------------------------------------------------------
+    # TESTIMONIALS
+    # ----------------------------------------------------------
 
+    if (
+        "testimonials" in selected_pages
+        and testimonial_cards
+    ):
+
+        sections += f"""
                 <section
                     id="testimonials"
                     className="section"
@@ -388,7 +578,11 @@ function App() {{
 
                         </div>
 
-                        <div className="testimonials-grid">
+                        <div
+                            className="
+                                testimonials-grid
+                            "
+                        >
 
                             {testimonial_cards}
 
@@ -397,11 +591,24 @@ function App() {{
                     </div>
 
                 </section>
+        """
 
+    # ----------------------------------------------------------
+    # FAQ
+    # ----------------------------------------------------------
 
+    if (
+        "faq" in selected_pages
+        and faq_items
+    ):
+
+        sections += f"""
                 <section
                     id="faq"
-                    className="section faq-section"
+                    className="
+                        section
+                        faq-section
+                    "
                 >
 
                     <div className="container">
@@ -427,8 +634,15 @@ function App() {{
                     </div>
 
                 </section>
+        """
 
+    # ----------------------------------------------------------
+    # CONTACT
+    # ----------------------------------------------------------
 
+    if "contact" in selected_pages:
+
+        sections += f"""
                 <section
                     id="contact"
                     className="contact-section"
@@ -467,15 +681,79 @@ function App() {{
                     </div>
 
                 </section>
+        """
+
+    # ==========================================================
+    # CONTACT BUTTON TARGET
+    # ==========================================================
+
+    contact_target = (
+        "#contact"
+        if "contact" in selected_pages
+        else "#home"
+    )
+
+    # ==========================================================
+    # FINAL REACT PROJECT
+    # ==========================================================
+
+    project = f"""
+import "./App.css";
+
+function App() {{
+
+    return (
+
+        <div
+            className="website"
+            style={{{{
+                "--primary": "{primary}",
+                "--secondary": "{secondary}"
+            }}}}
+        >
+
+            <nav className="navbar">
+
+                <div className="container nav-inner">
+
+                    <div className="logo">
+                        {name}
+                    </div>
+
+                    <div className="nav-links">
+
+                        {nav_links}
+
+                    </div>
+
+                    <a
+                        href="{contact_target}"
+                        className="nav-button"
+                    >
+                        {hero_button}
+                    </a>
+
+                </div>
+
+            </nav>
+
+            <main>
+
+                {sections}
 
             </main>
 
-
             <footer>
 
-                <div className="container footer-inner">
+                <div
+                    className="
+                        container
+                        footer-inner
+                    "
+                >
 
                     <div>
+
                         <strong>
                             {name}
                         </strong>
@@ -483,10 +761,12 @@ function App() {{
                         <p>
                             {industry}
                         </p>
+
                     </div>
 
                     <p>
-                        © 2026 {name}. All rights reserved.
+                        © 2026 {name}.
+                        All rights reserved.
                     </p>
 
                 </div>
@@ -495,11 +775,11 @@ function App() {{
 
         </div>
 
-    )
+    );
 
 }}
 
-export default App
+export default App;
 """
 
     return project

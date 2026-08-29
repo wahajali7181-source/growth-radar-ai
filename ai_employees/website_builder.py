@@ -1,4 +1,6 @@
+import os
 import streamlit as st
+
 
 from website_builder.engine import generate_complete_website
 
@@ -19,6 +21,14 @@ from website_builder.ai_editor import (
 
 from website_builder.preview import show_preview
 
+from auth.session import current_user
+from website_builder.database import (
+    create_website_record,
+    get_user_websites,
+    get_website_by_id,
+    update_website_record,
+    delete_website_record,
+)
 
 # ==========================================================
 # HELPERS
@@ -75,6 +85,36 @@ def _mark_website_changed():
     st.session_state[
         "website_has_unsaved_changes"
     ] = True
+
+    # --------------------------------------------------
+    # UPDATE WEBSITE ACTIVITY
+    # --------------------------------------------------
+
+    current_website_id = st.session_state.get(
+        "current_website_id"
+    )
+
+    user = current_user()
+
+    if (
+        current_website_id
+        and user
+        and user.get("id")
+    ):
+
+        update_result = update_website_record(
+            current_website_id,
+            user.get("id"),
+            status="generated",
+        )
+
+        if not update_result.get("success"):
+
+            print(
+                "[Website Builder] "
+                "Unable to update website activity:",
+                update_result
+            )
 
 
 # ==========================================================
@@ -320,6 +360,59 @@ def show():
 
             return
 
+        # SAVE WEBSITE TO CURRENT USER ACCOUNT
+        # --------------------------------------------------
+
+        user = current_user()
+
+        if not user or not user.get("id"):
+
+            st.error(
+                "Unable to identify the current user."
+            )
+
+            return
+
+        user_id = user.get(
+            "id"
+        )
+
+        generated_folder = result.get(
+            "folder"
+        )
+
+        website_record = create_website_record(
+            user_id=user_id,
+            business_name=business_name.strip(),
+            business_type=business_type.strip(),
+            folder_path=generated_folder,
+        )
+
+        if not website_record.get(
+            "success"
+        ):
+
+            st.error(
+                website_record.get(
+                    "message",
+                    "Unable to save website to your account.",
+                )
+            )
+
+            return
+
+        result[
+            "website_id"
+        ] = website_record.get(
+            "website_id"
+        )
+
+        st.session_state[
+            "current_website_id"
+        ] = website_record.get(
+            "website_id"
+        )
+
         # --------------------------------------------------
         # SAVE RESULT
         # --------------------------------------------------
@@ -343,13 +436,679 @@ def show():
         )
 
         st.success(
-            "✅ Website generated successfully!"
+            "Website generated successfully!"
         )
 
+    
         st.rerun()
-
     # ======================================================
-    # GET RESULT
+    # MY WEBSITES
+    # ======================================================
+
+    user = current_user()
+
+    if user and user.get("id"):
+
+        user_id = user.get("id")
+
+        saved_websites = get_user_websites(
+            user_id
+        )
+
+        if saved_websites:
+                    # --------------------------------------------------
+            # WEBSITE DASHBOARD SUMMARY
+            # --------------------------------------------------
+
+            total_websites = len(
+                saved_websites
+            )
+
+            published_websites = sum(
+                1
+                for website in saved_websites
+                if str(
+                    website.get(
+                        "status",
+                        ""
+                    )
+                ).lower() == "published"
+            )
+
+            generated_websites = sum(
+                1
+                for website in saved_websites
+                if str(
+                    website.get(
+                        "status",
+                        ""
+                    )
+                ).lower() == "generated"
+            )
+            live_websites = sum(
+                1
+                for website in saved_websites
+                if website.get(
+                    "live_url"
+                )
+            )
+
+            summary_col1, summary_col2, summary_col3, summary_col4 = (
+                st.columns(
+                    4
+                )
+            )
+
+            with summary_col1:
+
+                st.metric(
+                    "Total Websites",
+                    total_websites,
+                )
+
+            with summary_col2:
+
+                st.metric(
+                    "Published",
+                    published_websites,
+                )
+
+            with summary_col3:
+
+                st.metric(
+                    "Generated",
+                    generated_websites,
+                )    
+            with summary_col4:
+
+                st.metric(
+                    "Live Websites",
+                    live_websites,
+                )
+            st.divider()
+
+            st.subheader(
+                "🌐 My Websites"
+            )
+
+            st.caption(
+                "Manage the websites saved to your account."
+            )
+            filter_col1, filter_col2, filter_col3 = st.columns(
+                [2, 1, 1]
+            )
+
+            with filter_col1:
+
+                website_search = st.text_input(
+                    "Search websites",
+                    placeholder="Search by business name or type...",
+                    key="website_search",
+                )
+
+            with filter_col2:
+
+                website_status_filter = st.selectbox(
+                    "Status",
+                    options=[
+                        "All",
+                        "Published",
+                        "Generated",
+                        "Live",
+                    ],
+                    key="website_status_filter",
+                )
+            with filter_col3:
+
+                website_sort = st.selectbox(
+                    "Sort By",
+                    options=[
+                        "Recently Updated",
+                        "Newest Created",
+                        "Oldest Created",
+                        "Business Name A-Z",
+                    ],
+                    key="website_sort",
+                )
+            filtered_websites = []
+
+            search_query = website_search.strip().lower()
+
+            for website in saved_websites:
+
+                website_name = str(
+                    website.get(
+                        "business_name",
+                        ""
+                    )
+                ).lower()
+
+                website_type = str(
+                    website.get(
+                        "business_type",
+                        ""
+                    )
+                ).lower()
+
+                website_status = str(
+                    website.get(
+                        "status",
+                        ""
+                    )
+                ).lower()
+
+                matches_search = (
+                    not search_query
+                    or search_query in website_name
+                    or search_query in website_type
+                )
+
+                matches_status = (
+                    website_status_filter == "All"
+                    or (
+                        website_status_filter == "Live"
+                        and bool(
+                            website.get(
+                            "live_url"
+                        )
+                    )
+                )
+                    or (
+                        website_status_filter != "Live"
+                        and website_status
+                        == website_status_filter.lower()
+                    )
+                )
+
+                if (
+                    matches_search
+                    and matches_status
+                ):
+
+                    filtered_websites.append(
+                        website
+                    )
+            if website_sort == "Recently Updated":
+
+                filtered_websites.sort(
+                    key=lambda website: (
+                        website.get(
+                            "updated_at"
+                        )
+                        or ""
+                    ),
+                    reverse=True,
+                )
+
+            elif website_sort == "Newest Created":
+
+                filtered_websites.sort(
+                    key=lambda website: (
+                        website.get(
+                            "created_at"
+                        )
+                        or ""
+                    ),
+                    reverse=True,
+                )
+
+            elif website_sort == "Oldest Created":
+
+                filtered_websites.sort(
+                    key=lambda website: (
+                        website.get(
+                            "created_at"
+                        )
+                        or ""
+                    )
+                )
+
+            elif website_sort == "Business Name A-Z":
+
+                filtered_websites.sort(
+                    key=lambda website: str(
+                        website.get(
+                            "business_name",
+                            ""
+                        )
+                    ).lower()
+                )        
+            if not filtered_websites:
+
+                st.info(
+                    "No websites match your search or filter."
+                )
+
+            for website in filtered_websites:        
+            
+
+                website_id = website.get(
+                    "id"
+                )
+
+                business_name = website.get(
+                    "business_name",
+                    "Untitled Website",
+                )
+
+                business_type = website.get(
+                    "business_type",
+                    ""
+                )
+
+                status = website.get(
+                    "status",
+                    "generated",
+                )
+                status_key = str(
+                    status or ""
+                ).strip().lower()
+
+                if status_key == "published":
+
+                    status_label = "Published"
+
+                elif status_key == "generated":
+
+                    status_label = "Draft"
+
+                else:
+
+                    status_label = (
+                        status.title()
+                        if status
+                        else "Unknown"
+                    )
+
+                created_at = website.get(
+                    "created_at",
+                    ""
+                )
+
+                updated_at = website.get(
+                    "updated_at",
+                    ""
+                )
+
+                live_url = website.get(
+                    "live_url"
+                )
+
+                folder_path = website.get(
+                    "folder_path"
+                )
+
+                with st.container(
+                    border=True
+                ):
+
+                    header_col, status_col = st.columns(
+                        [3, 1]
+                    )
+
+                    with header_col:
+
+                        st.markdown(
+                            f"### {business_name}"
+                        )
+
+                        if business_type:
+
+                            st.caption(
+                                f"Business Type: {business_type}"
+                            )
+
+                    with status_col:
+
+                        if status_key == "published":
+
+                            st.success(
+                                "LIVE"
+                            )
+
+                        elif status_key == "generated":
+
+                            st.info(
+                                "DRAFT"
+                            )
+
+                        else:
+
+                            st.warning(
+                                status_label.upper()
+                            )
+
+                    info_col1, info_col2 = st.columns(
+                        2
+                    )
+
+                    with info_col1:
+
+                        if created_at:
+
+                            st.caption(
+                                f"Created: {created_at}"
+                            )
+
+                    with info_col2:
+
+                        if updated_at:
+
+                            st.caption(
+                                f"Last Updated: {updated_at}"
+                            )
+                    action_col1, action_col2, action_col3 = st.columns(
+                        3
+                    )
+
+                    # ------------------------------------------
+                    # MANAGE
+                    # ------------------------------------------
+
+                    with action_col1:
+
+                        if st.button(
+                            "Manage",
+                            key=f"manage_{website_id}",
+                            use_container_width=True,
+                        ):
+
+                            if not folder_path:
+
+                                st.error(
+                                    "Website folder path is missing."
+                                )
+
+                            elif not os.path.isdir(
+                                folder_path
+                            ):
+
+                                st.error(
+                                    "Website files are no longer available."
+                                )
+
+                            else:
+
+                                _stop_existing_preview()
+
+                                st.session_state[
+                                    "website_builder_result"
+                                ] = {
+                                    "success": True,
+                                    "folder": folder_path,
+                                    "website_id": website_id,
+                                    "business_name": business_name,
+                                    "business_type": business_type,
+                                }
+
+                                st.session_state[
+                                    "current_website_id"
+                                ] = website_id
+
+                                st.session_state[
+                                    "current_website_folder"
+                                ] = folder_path
+
+                                st.session_state[
+                                    "website_has_unsaved_changes"
+                                ] = False
+
+                                st.session_state.pop(
+                                    "website_publish_result",
+                                    None,
+                                )
+
+                                st.session_state.pop(
+                                    "website_edit_result",
+                                    None,
+                                )
+
+                                st.success(
+                                    "Website loaded successfully."
+                                )
+
+                                st.rerun()
+
+                    # ------------------------------------------
+                    # OPEN LIVE WEBSITE
+                    # ------------------------------------------
+
+                    with action_col2:
+
+                        if live_url:
+
+                            st.link_button(
+                                "Open Live",
+                                live_url,
+                                use_container_width=True,
+                            )
+
+                        else:
+
+                            st.button(
+                                "Not Live",
+                                disabled=True,
+                                key=f"not_live_{website_id}",
+                                use_container_width=True,
+                            )
+
+                                       # ------------------------------------------
+                    # DELETE
+                    # ------------------------------------------
+
+                    with action_col3:
+
+                        confirm_key = (
+                            f"confirm_delete_{website_id}"
+                        )
+
+                        if not st.session_state.get(
+                            confirm_key,
+                            False,
+                        ):
+
+                            if st.button(
+                                "Delete",
+                                key=f"delete_{website_id}",
+                                use_container_width=True,
+                            ):
+
+                                st.session_state[
+                                    confirm_key
+                                ] = True
+
+                                st.rerun()
+
+                        else:
+
+                            st.warning(
+                                "Delete this website?"
+                            )
+
+                            confirm_col, cancel_col = st.columns(
+                                2
+                            )
+
+                            with confirm_col:
+
+                                if st.button(
+                                    "Yes, Delete",
+                                    key=f"confirm_yes_{website_id}",
+                                    use_container_width=True,
+                                ):
+
+                                    delete_result = (
+                                        delete_website_record(
+                                            website_id,
+                                            user_id,
+                                        )
+                                    )
+
+                                    if delete_result.get(
+                                        "success"
+                                    ):
+
+                                        if (
+                                            st.session_state.get(
+                                                "current_website_id"
+                                            )
+                                            == website_id
+                                        ):
+
+                                            _stop_existing_preview()
+
+                                            st.session_state.pop(
+                                                "current_website_id",
+                                                None,
+                                            )
+
+                                            st.session_state.pop(
+                                                "current_website_folder",
+                                                None,
+                                            )
+
+                                            st.session_state.pop(
+                                                "website_builder_result",
+                                                None,
+                                            )
+
+                                        st.session_state.pop(
+                                            confirm_key,
+                                            None,
+                                        )
+
+                                        st.success(
+                                            "Website removed from your account."
+                                        )
+
+                                        st.rerun()
+
+                                    else:
+
+                                        st.error(
+                                            delete_result.get(
+                                                "message",
+                                                "Unable to delete website.",
+                                            )
+                                        )
+
+                            with cancel_col:
+
+                                if st.button(
+                                    "Cancel",
+                                    key=f"cancel_delete_{website_id}",
+                                    use_container_width=True,
+                                ):
+
+                                    st.session_state.pop(
+                                        confirm_key,
+                                        None,
+                                    )
+
+                                    st.rerun()
+                                        # ------------------------------------------
+                    # EDIT WEBSITE DETAILS
+                    # ------------------------------------------
+
+                    with st.expander(
+                        "Edit Website Details",
+                        expanded=False,
+                    ):
+
+                        edited_business_name = st.text_input(
+                            "Business Name",
+                            value=business_name,
+                            key=f"edit_name_{website_id}",
+                        )
+
+                        edited_business_type = st.text_input(
+                            "Business Type",
+                            value=business_type,
+                            key=f"edit_type_{website_id}",
+                        )
+
+                        if st.button(
+                            "Save Details",
+                            key=f"save_details_{website_id}",
+                            use_container_width=True,
+                        ):
+
+                            edited_business_name = (
+                                edited_business_name.strip()
+                            )
+
+                            edited_business_type = (
+                                edited_business_type.strip()
+                            )
+
+                            if not edited_business_name:
+
+                                st.error(
+                                    "Business name is required."
+                                )
+
+                            else:
+
+                                update_result = (
+                                    update_website_record(
+                                        website_id,
+                                        user_id=user_id,
+                                        business_name=
+                                            edited_business_name,
+                                        business_type=
+                                            edited_business_type,
+                                    )
+                                )
+
+                                if update_result.get(
+                                    "success"
+                                ):
+
+                                    # Update currently loaded
+                                    # website session if necessary.
+                                    if (
+                                        st.session_state.get(
+                                            "current_website_id"
+                                        )
+                                        == website_id
+                                    ):
+
+                                        current_result = (
+                                            st.session_state.get(
+                                                "website_builder_result"
+                                            )
+                                        )
+
+                                        if current_result:
+
+                                            current_result[
+                                                "business_name"
+                                            ] = edited_business_name
+
+                                            current_result[
+                                                "business_type"
+                                            ] = edited_business_type
+
+                                            st.session_state[
+                                                "website_builder_result"
+                                            ] = current_result
+
+                                    st.success(
+                                        "Website details updated successfully."
+                                    )
+
+                                    st.rerun()
+
+                                else:
+
+                                    st.error(
+                                        update_result.get(
+                                            "message",
+                                            "Unable to update website details.",
+                                        )
+                                    )
+    # ======================================================
+    # GET RESULTs
     # ======================================================
 
     result = st.session_state.get(
@@ -606,7 +1365,7 @@ def show():
                             str(preview_error),
                             language="text",
                         )
-
+    
     # ======================================================
     # WEBSITE EDITOR
     # ======================================================
@@ -1119,28 +1878,27 @@ def show():
 
         if live_url:
 
-            st.markdown(
-                "### 🌐 Live Website"
+            live_col, admin_col = st.columns(
+                2
             )
 
-            st.code(
-                live_url,
-                language="text",
-            )
+            with live_col:
 
-            st.link_button(
-                "🌐 Open Live Website",
-                live_url,
-                use_container_width=True,
-            )
+                st.link_button(
+                    "Open Live Website",
+                    live_url,
+                    use_container_width=True,
+                )
 
-        if admin_url:
+            with admin_col:
 
-            st.link_button(
-                "⚙️ Open Netlify Dashboard",
-                admin_url,
-                use_container_width=True,
-            )
+                if admin_url:
+
+                    st.link_button(
+                        "Open Netlify Dashboard",
+                        admin_url,
+                        use_container_width=True,
+                    )
 
         site_id = publish_result.get(
             "site_id"
@@ -1212,13 +1970,109 @@ def show():
                     business_name.strip(),
                 )
 
-            if publish_response.get(
-                "success"
+        if publish_response.get(
+            "success"
             ):
+
+                # ------------------------------------------
+                # SAVE PUBLISH RESULT
+                # ------------------------------------------
 
                 st.session_state[
                     "website_publish_result"
                 ] = publish_response
+
+                # ------------------------------------------
+                # SYNC PUBLISHED WEBSITE WITH DATABASE
+                # ------------------------------------------
+
+                current_website_id = (
+                    st.session_state.get(
+                        "current_website_id"
+                    )
+                    or result.get(
+                        "website_id"
+                    )
+                )
+
+                current_user_data = current_user()
+
+                current_user_id = (
+                    current_user_data.get("id")
+                    if current_user_data
+                    else None
+                )
+
+                if (
+                    current_website_id
+                    and current_user_id
+                ):
+
+                    update_fields = {
+
+                        "status": "published",
+
+                        "live_url":
+                            publish_response.get(
+                                "live_url"
+                            ),
+
+                    }
+
+                    site_id = publish_response.get(
+                        "site_id"
+                    )
+
+                    if site_id:
+
+                        update_fields[
+                            "netlify_site_id"
+                        ] = site_id
+
+                    database_update = (
+                        update_website_record(
+                            current_website_id,
+                            user_id=current_user_id,
+                            **update_fields,
+                        )
+                    )
+
+                    if not database_update.get(
+                        "success"
+                    ):
+
+                        st.warning(
+                            "Website was published, but "
+                            "the account record could not "
+                            "be updated."
+                        )
+
+                    else:
+
+                        result[
+                            "website_id"
+                        ] = current_website_id
+
+                        result[
+                            "live_url"
+                        ] = publish_response.get(
+                            "live_url"
+                        )
+
+                        result[
+                            "status"
+                        ] = "published"
+
+                        st.session_state[
+                            "website_builder_result"
+                        ] = result
+
+                        st.session_state[
+                            "current_website_id"
+                        ] = current_website_id
+                # ------------------------------------------
+                # CLEAR UNSAVED CHANGES
+                # ------------------------------------------
 
                 st.session_state[
                     "website_has_unsaved_changes"
@@ -1229,8 +2083,7 @@ def show():
                 )
 
                 st.rerun()
-
-            else:
+        else:
 
                 st.error(
                     publish_response.get(
